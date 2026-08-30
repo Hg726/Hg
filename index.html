@@ -68,14 +68,86 @@ a{text-decoration:none;color:inherit}
 }
 @keyframes orbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-34px)}}
 
+/* 装饰同心圆环（呼应参考站「数字孪生」核心）：右侧背景层，缓慢旋转 + 呼吸脉冲，纯装饰不阻挡交互 */
+.deco-rings{position:fixed;top:50%;right:-160px;transform:translateY(-50%);z-index:-2;pointer-events:none;
+  width:620px;height:620px;opacity:.5;
+  -webkit-mask-image:radial-gradient(circle,#000 55%,transparent 78%);
+  mask-image:radial-gradient(circle,#000 55%,transparent 78%)}
+.deco-rings svg{width:100%;height:100%;animation:ringSpin 60s linear infinite}
+.deco-rings circle{fill:none;stroke:rgba(34,211,238,.22);stroke-width:1}
+.deco-rings .r-dash{stroke:rgba(129,140,248,.28);stroke-dasharray:5 12;animation:ringSpinR 45s linear infinite;transform-origin:center}
+.deco-rings .r-core{stroke:rgba(52,211,153,.35);animation:ringPulse 6s ease-in-out infinite;transform-origin:center}
+@keyframes ringSpin{to{transform:rotate(360deg)}}
+@keyframes ringSpinR{to{transform:rotate(-360deg)}}
+@keyframes ringPulse{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:.8;transform:scale(1.06)}}
+@media(max-width:900px){.deco-rings{width:420px;height:420px;right:-180px;opacity:.35}}
+@media(prefers-reduced-motion:reduce){.deco-rings svg,.deco-rings .r-dash,.deco-rings .r-core{animation:none}}
+
+/* 英雄姓名标题：字符逐个渐入上浮 + 一次性光泽扫过（电影感首屏）
+   注意：.metric 的渐变裁剪(background-clip:text)不会向子元素继承，
+   因此逐字 span 需各自应用同款渐变裁剪，否则文字会透明不可见。
+   基础态设为可见(opacity:1)，动画改为 from 0 渐入——即便动画不触发文字也一定可见，绝不隐身。 */
+.hero-name{display:inline-block}
+.hero-name .ch{display:inline-block;opacity:1;
+  background:linear-gradient(120deg,#22d3ee,#818cf8 55%,#34d399);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  background-size:200% 100%}
+.js .hero-name .ch{animation:chIn .6s cubic-bezier(.2,.8,.2,1) both}
+.hero-name .ch:not(.sp){padding-right:.01em}   /* 防止部分字体渐变裁剪贴边被切 */
+@keyframes chIn{from{opacity:0;transform:translateY(.5em) rotate(4deg)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.hero-name .ch{opacity:1;transform:none;animation:none}}
+
 /* 顶部滚动进度条 */
 #progress{position:fixed;top:0;left:0;height:4px;width:0;z-index:200;
   background:linear-gradient(90deg,#22d3ee,#34d399);box-shadow:0 0 12px rgba(34,211,238,.6);
   transition:width .08s linear}
 
+/* ======= 自定义鼠标光标：实心小点 + 缓动延迟外圈（参考 liuhao.online 的「点+圈」设计） =======
+   仅在具备精确指针(鼠标)的设备启用；触摸端 / 减动效场景下完全隐藏并恢复系统光标。 */
+.cursor-on{cursor:none}
+.cursor-on a,.cursor-on button,.cursor-on input,.cursor-on textarea,.cursor-on select,
+.cursor-on [role="button"],.cursor-on .copy-btn,.cursor-on label,
+/* 图底卡 / 服务卡显式声明了 cursor:pointer，需在自定义光标模式下一并隐藏系统箭头 */
+.cursor-on .glass-photo,.cursor-on .svc-card,.cursor-on .glass{cursor:none}
+#cursorDot,#cursorRing{position:fixed;top:0;left:0;z-index:9999;pointer-events:none;
+  border-radius:50%;transform:translate(-50%,-50%);will-change:transform;mix-blend-mode:normal}
+/* 实心小点：精确跟随，青色核心，带柔光 */
+#cursorDot{width:7px;height:7px;background:#22d3ee;
+  box-shadow:0 0 10px rgba(34,211,238,.9),0 0 4px rgba(34,211,238,.6);
+  transition:width .2s ease,height .2s ease,background .2s ease,opacity .3s ease}
+/* 空心外圈：缓动延迟跟随（JS lerp），悬停时放大染色 */
+#cursorRing{width:36px;height:36px;border:1.5px solid rgba(34,211,238,.55);
+  box-shadow:0 0 18px rgba(34,211,238,.18) inset;
+  transition:width .25s cubic-bezier(.2,.8,.2,1),height .25s cubic-bezier(.2,.8,.2,1),
+             border-color .25s ease,background .25s ease,opacity .3s ease}
+/* 悬停可交互元素：外圈放大 + 更亮描边 + 极淡填充；小点稍微收缩 */
+#cursorRing.hover{width:56px;height:56px;border-color:rgba(103,232,249,.9);
+  background:rgba(34,211,238,.08);box-shadow:0 0 26px rgba(34,211,238,.3) inset}
+#cursorDot.hover{width:5px;height:5px;background:#67e8f9}
+/* 按下：外圈瞬间收缩，产生「咔哒」反馈 */
+#cursorRing.down{width:26px;height:26px;border-color:rgba(52,211,153,.9)}
+#cursorDot.down{width:10px;height:10px;background:#34d399}
+/* 移出窗口时淡出 */
+#cursorDot.hidden,#cursorRing.hidden{opacity:0}
+/* 浅色主题下换成深色描边，保证在亮底可见 */
+.light #cursorDot{background:#0891b2;box-shadow:0 0 10px rgba(8,145,178,.6)}
+.light #cursorRing{border-color:rgba(8,145,178,.5)}
+.light #cursorRing.hover{border-color:rgba(8,145,178,.85);background:rgba(8,145,178,.08)}
+/* 减动效偏好：不显示自定义光标（下方 JS 也会跳过初始化） */
+@media(prefers-reduced-motion:reduce){#cursorDot,#cursorRing{display:none!important}}
+
 /* 玻璃卡片（兜底类，Tailwind 未加载时生效）—— 半透明让背景隐约透出，同时保证正文可读 */
 .glass{background:rgba(15,23,42,.5);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
   border:1px solid rgba(255,255,255,.10);border-radius:28px}
+/* 卡片鼠标光晕跟随（spotlight）：跟随光标的柔和青色光斑，提升立体高级感。
+   由 JS 写入 --sx/--sy(光标在卡片内坐标) 与 --sp(悬停时=1)。默认不占据合成层，不影响性能。 */
+.glass{position:relative}
+.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+  opacity:var(--sp,0);transition:opacity .35s ease;
+  background:radial-gradient(240px 240px at var(--sx,50%) var(--sy,50%),rgba(34,211,238,.14),transparent 60%)}
+/* 卡片内容需在光斑之上 */
+.glass>*{position:relative;z-index:1}
+.light .glass::after{background:radial-gradient(240px 240px at var(--sx,50%) var(--sy,50%),rgba(8,145,178,.12),transparent 60%)}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:600;
   background:rgba(34,211,238,.10);border:1px solid rgba(34,211,238,.22);color:#67e8f9}
 
@@ -374,7 +446,223 @@ a{text-decoration:none;color:inherit}
 @media(min-width:900px){.bento{grid-template-columns:repeat(3,1fr)}
   .col-2{grid-column:span 2}.col-3{grid-column:span 3}.row-2{grid-row:span 2}}
 
+/* ======================= 锯齿错位排列（左右交替，Z 字节奏，留白优雅） =======================
+   .zig 容器内每张卡约占 62% 宽度：奇数卡靠左、偶数卡靠右并下移错位，形成左右摆动的视觉节奏。
+   小屏自动回退为单列全宽，保证可读与不塌。 */
+.zig{display:flex;flex-direction:column;gap:22px}
+.zig>*{width:100%}
+@media(min-width:900px){
+  .zig{gap:34px}
+  .zig>*{width:62%}
+  .zig>*:nth-child(odd){align-self:flex-start;margin-right:auto}   /* 靠左 */
+  .zig>*:nth-child(even){align-self:flex-end;margin-left:auto;margin-top:-46px}   /* 靠右并上提错位，形成咬合 */
+  /* 宽内容卡（经历时间轴等）可用 .zig-wide 占满整行，避免横向拥挤 */
+  .zig>.zig-wide{width:100%;margin:0!important;align-self:stretch}
+}
+/* 减动效/窄屏不做负边距错位 */
+@media(max-width:899px){.zig>*{margin:0!important}}
+
 .vt-glare{border-radius:28px!important}
+
+/* ======================= SERVICES 技能站（参考图：暗色影院风 · 左极简字 · 右图卡片） ======================= */
+.svc{position:relative}
+.svc-grid{display:grid;grid-template-columns:1fr;gap:28px}
+@media(min-width:1000px){.svc-grid{grid-template-columns:300px 1fr;gap:40px;align-items:start}}
+/* ---- 左侧极简标题栏 ---- */
+.svc-left{position:relative;padding-top:6px}
+@media(min-width:1000px){.svc-left{position:sticky;top:96px}}
+.svc-index{position:absolute;top:-4px;right:0;font-size:13px;font-weight:700;letter-spacing:.3em;color:#475569}
+.svc-heading{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;letter-spacing:.14em;
+  font-size:clamp(34px,5vw,52px);line-height:1;color:#e2e8f0;margin:0}
+.svc-vlabel{writing-mode:vertical-rl;position:absolute;left:-2px;top:82px;font-size:10.5px;letter-spacing:.35em;
+  color:#64748b;font-weight:700;text-transform:uppercase}
+.svc-sub{margin:22px 0 0 26px;color:#94a3b8;font-size:14px;line-height:1.9;font-weight:500}
+.svc-caret{display:inline-block;width:2px;height:1em;background:var(--cyan);margin-left:4px;vertical-align:-2px;
+  animation:blink 1s steps(1) infinite}
+.svc-nums{margin:34px 0 0 26px;display:flex;flex-direction:column;gap:14px}
+.svc-nums span{font-size:12px;font-weight:700;letter-spacing:.2em;color:#334155;transition:color .3s,transform .3s}
+.svc-nums span.on{color:#22d3ee;transform:translateX(6px)}
+/* ---- 右侧卡片容器：横向并排，可在窄屏堆叠 ---- */
+.svc-cards{display:grid;grid-template-columns:1fr;gap:22px}
+@media(min-width:640px){.svc-cards{grid-template-columns:1fr 1fr}}
+/* ---- 单张服务卡：竖长比例、图片背景 + 暗色遮罩 + 悬浮交互 ---- */
+.svc-card{position:relative;overflow:hidden;border-radius:22px;min-height:420px;
+  border:1px solid rgba(255,255,255,.10);background:rgb(15,23,42);cursor:pointer;
+  display:flex;flex-direction:column;justify-content:flex-end;isolation:isolate;
+  transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s ease,border-color .4s ease}
+.svc-card-img{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;
+  transform:scale(1.06);filter:brightness(.62) saturate(1.05);
+  transition:transform .8s cubic-bezier(.2,.8,.2,1),filter .5s ease}
+.svc-card-shade{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(15,23,42,.15) 0%,rgba(15,23,42,.55) 45%,rgba(15,23,42,.90) 100%)}
+.svc-card-no{position:absolute;top:16px;right:20px;z-index:2;font-size:clamp(40px,6vw,64px);font-weight:800;
+  line-height:1;color:rgba(255,255,255,.10);letter-spacing:.02em;transition:color .4s ease}
+.svc-card-body{position:relative;z-index:2;padding:24px 22px 22px}
+.svc-card-title{font-size:22px;font-weight:800;color:#fff;margin:0 0 12px;letter-spacing:.01em}
+.svc-card-desc{font-size:13px;line-height:1.85;color:#cbd5e1;margin:0;max-width:34ch}
+.svc-card-tags{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);
+  font-size:10.5px;font-weight:700;letter-spacing:.16em;color:#67e8f9;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.svc-card-tags i{color:#475569;font-style:normal;margin:0 2px}
+.svc-card-tags b{color:#475569;font-weight:700;margin:0 3px}
+.svc-card-glow{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;
+  background:radial-gradient(60% 50% at 50% 100%,rgba(34,211,238,.28),transparent 70%);transition:opacity .5s ease}
+/* 悬浮交互：卡片上浮、图片放大提亮、编号点亮、青色描边与辉光 */
+.svc-card:hover{transform:translateY(-10px);border-color:rgba(34,211,238,.5);
+  box-shadow:0 30px 70px -24px rgba(34,211,238,.5),0 0 0 1px rgba(34,211,238,.25)}
+.svc-card:hover .svc-card-img{transform:scale(1.14);filter:brightness(.8) saturate(1.15)}
+.svc-card:hover .svc-card-no{color:rgba(103,232,249,.5)}
+.svc-card:hover .svc-card-glow{opacity:1}
+.svc-card:focus-visible{outline:2px solid rgba(34,211,238,.7);outline-offset:3px}
+/* 浅色主题适配 */
+.light .svc-heading{color:#0b1220}
+.light .svc-card{background:#e2e8f0;border-color:rgba(15,23,42,.12)}
+.light .svc-nums span.on{color:#0891b2}
+/* ---- 技能矩阵卡（技能站同款外壳 + 卡内能力进度条） ---- */
+.skl-card .skl-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.skl-card .skl-ic{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;flex:0 0 auto;
+  color:#67e8f9;border:1px solid rgba(103,232,249,.35);background:rgba(34,211,238,.12)}
+.skl-card .skl-bars{display:flex;flex-direction:column;gap:11px}
+.skl-card .skl-row-top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.skl-card .skl-row-top span{color:#e2e8f0;font-weight:600}
+.skl-card .skl-pct{color:#94a3b8;font-weight:700}
+.skl-card .skl-track{height:6px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden}
+.skl-card .skl-fill{display:block;height:100%;border-radius:999px;
+  background:linear-gradient(90deg,#22d3ee,#818cf8);transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+.light .skl-card .skl-row-top span{color:#0b1220}
+/* 移动端：卡片略降高度，标题栏左对齐 */
+@media(max-width:640px){.svc-card{min-height:360px}.svc-vlabel{display:none}}
+@media(prefers-reduced-motion:reduce){
+  .svc-card,.svc-card-img{transition:none}.svc-caret{animation:none}
+}
+
+/* ======================= 图片背景卡（把普通卡升级为 SERVICES 同款：图底 + 暗色遮罩 + 悬浮交互） =======================
+   用法：给 .glass 卡追加 .glass-photo，并注入 .gp-img / .gp-shade / .gp-glow 三层（在内容之下）。
+   内容仍在最上层，暗色遮罩保证正文可读；hover 时图片放大提亮、青描边与底部辉光，观感与技能站一致。 */
+.glass-photo{position:relative;isolation:isolate;overflow:hidden;cursor:pointer;
+  border:1px solid rgba(255,255,255,.10);
+  /* 颜色还原为与个人名片 .glass 相同的板岩蓝 rgba(15,23,42,..)，仅换色不改结构 */
+  background:linear-gradient(160deg,rgba(15,23,42,.55),rgba(15,23,42,.62))}
+.glass-photo .gp-img{position:absolute;inset:0;z-index:-3;background-size:cover;background-position:center;
+  transform:scale(1.05);filter:brightness(.5) saturate(1.05);
+  transition:transform .8s cubic-bezier(.2,.8,.2,1),filter .5s ease}
+.glass-photo .gp-shade{position:absolute;inset:0;z-index:-2;pointer-events:none;
+  background:linear-gradient(180deg,rgba(15,23,42,.30) 0%,rgba(15,23,42,.58) 42%,rgba(15,23,42,.86) 100%)}
+.glass-photo .gp-glow{position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;
+  background:radial-gradient(65% 55% at 50% 100%,rgba(34,211,238,.26),transparent 72%);transition:opacity .5s ease}
+/* 内容层置于三层背景之上（.glass>* 已 z-index:1，这里明确抬升，::before 顶缘高光继续生效） */
+.glass-photo>*:not(.gp-img):not(.gp-shade):not(.gp-glow){position:relative;z-index:2}
+/* 悬浮交互：图片放大提亮 + 底部青色辉光（上浮沿用 .lift；描边这里加强） */
+.glass-photo:hover .gp-img{transform:scale(1.12);filter:brightness(.56) saturate(1.15)}
+.glass-photo:hover .gp-glow{opacity:1}
+.glass-photo.lift:hover{border-color:rgba(34,211,238,.42);
+  box-shadow:0 28px 66px -26px rgba(0,0,0,.95),0 0 0 1px rgba(34,211,238,.2),0 20px 50px -22px rgba(34,211,238,.4)}
+.glass-photo:focus-visible{outline:2px solid rgba(34,211,238,.6);outline-offset:3px}
+/* 浅色主题：遮罩减淡、图片提亮，保持可读 */
+.light .glass-photo{background:linear-gradient(160deg,rgba(255,255,255,.55),rgba(241,245,249,.66))}
+.light .glass-photo .gp-img{filter:brightness(.9) saturate(1.05)}
+.light .glass-photo .gp-shade{background:linear-gradient(180deg,rgba(241,245,249,.35),rgba(241,245,249,.72))}
+@media(prefers-reduced-motion:reduce){.glass-photo .gp-img{transition:none}}
+
+/* ======================= 首屏个人 FLAG 全屏英雄区（参考 liuhao.online：纯文字宣言 + 全屏留白 + 淡入） ======================= */
+.flag-hero{position:relative;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:88px 20px 40px;overflow:hidden;
+  /* 抵消 <main> 的 pt-24(96px)，让宣言真正占满第一屏 */
+  margin-top:-96px}
+.flag-eyebrow{font-family:"Plus Jakarta Sans",sans-serif;font-size:12px;font-weight:700;letter-spacing:.42em;
+  text-transform:uppercase;color:#67e8f9;opacity:.85}
+.flag-name{margin:20px 0 0;font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;letter-spacing:.02em;
+  font-size:clamp(30px,6vw,64px);line-height:1.05;color:#fff}
+.flag-name .inf{background:linear-gradient(120deg,#22d3ee,#818cf8 55%,#34d399);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.flag-slogan{margin:26px auto 0;max-width:22ch;font-weight:300;color:#cbd5e1;
+  font-size:clamp(20px,3.4vw,34px);line-height:1.5;letter-spacing:.02em}
+.flag-slogan b{font-weight:700;color:#fff}
+.flag-sub{margin:22px auto 0;max-width:40ch;color:#94a3b8;font-size:clamp(13px,1.8vw,16px);line-height:1.9;font-weight:400}
+/* 逐行淡入上浮 */
+.js .flag-hero .fx{opacity:0;transform:translateY(18px);animation:flagUp .9s cubic-bezier(.2,.8,.2,1) forwards}
+.js .flag-hero .fx.d1{animation-delay:.05s}.js .flag-hero .fx.d2{animation-delay:.22s}
+.js .flag-hero .fx.d3{animation-delay:.42s}.js .flag-hero .fx.d4{animation-delay:.62s}
+@keyframes flagUp{to{opacity:1;transform:none}}
+/* 底部「向下滚动」提示 */
+.flag-scroll{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;
+  align-items:center;gap:8px;color:#64748b;font-size:11px;letter-spacing:.28em;font-weight:700;text-transform:uppercase}
+.flag-scroll .fs-line{width:1px;height:38px;background:linear-gradient(180deg,transparent,rgba(34,211,238,.8));
+  animation:fsPulse 1.8s ease-in-out infinite}
+@keyframes fsPulse{0%,100%{opacity:.3;transform:scaleY(.7)}50%{opacity:1;transform:scaleY(1)}}
+.light .flag-name{color:#0b1220}.light .flag-slogan{color:#334155}.light .flag-slogan b{color:#0b1220}
+@media(prefers-reduced-motion:reduce){
+  .js .flag-hero .fx{opacity:1;transform:none;animation:none}.flag-scroll .fs-line{animation:none}
+}
+
+/* 个人名片小背景（bentoHero 专属：柔和板岩底 + 顶部青色光晕，呼应「求职/联系」内容） */
+.hero-bg{position:absolute;inset:0;z-index:-2;pointer-events:none;background-size:cover;background-position:center;
+  filter:brightness(.5) saturate(1.05);opacity:.9;transform:scale(1.04);transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.hero-bg-shade{position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(150deg,rgba(15,23,42,.62) 0%,rgba(15,23,42,.5) 45%,rgba(15,23,42,.72) 100%)}
+#bentoHero{position:relative;isolation:isolate;overflow:hidden}
+#bentoHero>*:not(.hero-bg):not(.hero-bg-shade){position:relative;z-index:2}
+#bentoHero:hover .hero-bg{transform:scale(1.09)}
+.light .hero-bg{filter:brightness(.95) saturate(1.05)}
+.light .hero-bg-shade{background:linear-gradient(150deg,rgba(241,245,249,.6),rgba(241,245,249,.72))}
+@media(prefers-reduced-motion:reduce){.hero-bg{transition:none}}
+
+/* ============================================================
+   移动端适配（≤768px）：导航、间距、首屏、技能站/矩阵、卡片全面优化
+   ============================================================ */
+/* 移动端章节导航条：横向可滚动药丸（桌面隐藏，由 md:hidden 控制显隐） */
+.mobile-nav{display:none}
+.mobile-nav{gap:8px;padding:8px 14px 10px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  border-top:1px solid rgba(255,255,255,.06);background:rgba(3,7,18,.35)}
+.mobile-nav::-webkit-scrollbar{display:none}
+.mnav-pill{flex:0 0 auto;padding:7px 15px;border-radius:999px;font-size:13px;font-weight:700;
+  color:#cbd5e1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+  text-decoration:none;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;
+  -webkit-tap-highlight-color:transparent}
+.mnav-pill:active{background:rgba(34,211,238,.18);color:#e0f2fe;border-color:rgba(34,211,238,.5)}
+.light .mobile-nav{background:rgba(255,255,255,.4)}
+.light .mnav-pill{color:#334155;background:rgba(15,23,42,.05);border-color:rgba(15,23,42,.12)}
+
+@media(max-width:767px){
+  .mobile-nav{display:flex}
+  /* 双层顶栏：锚点滚动落点相应下移，避免被固定头遮挡 */
+  html{scroll-padding-top:120px}
+  /* 顶栏 + 移动导航双层，正文顶部留白相应增大；flag 上移量同步 */
+  #app{padding-top:118px}
+  .flag-hero{margin-top:-118px;min-height:100svh;padding:112px 18px 56px}
+  .flag-eyebrow{font-size:11px;letter-spacing:.3em}
+  .flag-slogan{max-width:18ch}
+  .flag-sub{max-width:34ch}
+  .flag-scroll{bottom:18px}
+  /* 顶栏移动端：品牌英文名收起，避免拥挤 */
+  header .text-slate-500.text-xs{display:none}
+  /* Bento 卡片：内边距与圆角略收，触控留白足够 */
+  .glass{border-radius:22px}
+  .flag-name .inf{display:inline}
+  /* 技能站 / 技能矩阵：左标题栏与右卡片自然纵向堆叠，绝对定位元素归位不重叠 */
+  .svc{margin-top:44px}
+  .svc-left{padding-top:2px;padding-left:2px}
+  .svc-index{top:2px}
+  .svc-vlabel{display:none}                 /* 竖排小标签在窄屏隐藏，避免与标题重叠 */
+  .svc-heading{font-size:clamp(30px,10vw,44px)}
+  .svc-sub{margin-left:2px}
+  .svc-nums{flex-direction:row;flex-wrap:wrap;margin-left:2px;gap:10px}
+  .svc-nums span.on{transform:translateX(0);text-decoration:underline;text-underline-offset:4px}
+  .svc-cards{grid-template-columns:1fr;gap:16px}
+  .svc-card{min-height:340px}
+  /* 联系方式按钮：每行铺满，点击区域更大 */
+  .copy-btn{flex:1 1 100%}
+  /* 章节标题字号 & 间距收敛 */
+  section .svc-grid{gap:22px}
+}
+/* 超窄屏（≤380px）再收一档，防止溢出 */
+@media(max-width:380px){
+  .flag-name{font-size:clamp(26px,8vw,34px)}
+  .flag-slogan{font-size:clamp(17px,6vw,22px)}
+  .svc-card{min-height:300px}
+  .mnav-pill{padding:6px 12px;font-size:12px}
+}
 
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
@@ -394,6 +682,19 @@ a{text-decoration:none;color:inherit}
 <div class="orb orb-br"></div>
 <div class="orb orb-mid"></div>
 <div class="grid-tex"></div>
+<!-- 装饰同心圆环（数字孪生核心；纯背景装饰，JS 会随滚动做轻微视差） -->
+<div class="deco-rings" id="decoRings" aria-hidden="true">
+  <svg viewBox="0 0 300 300">
+    <circle cx="150" cy="150" r="145"></circle>
+    <circle class="r-dash" cx="150" cy="150" r="118"></circle>
+    <circle cx="150" cy="150" r="92"></circle>
+    <circle class="r-dash" cx="150" cy="150" r="64"></circle>
+    <circle class="r-core" cx="150" cy="150" r="34"></circle>
+  </svg>
+</div>
+<!-- 自定义鼠标光标：实心小点 + 缓动延迟外圈（JS 按设备能力决定是否启用） -->
+<div id="cursorRing" aria-hidden="true"></div>
+<div id="cursorDot" aria-hidden="true"></div>
 
 <!-- 导航 -->
 <header class="fixed top-0 inset-x-0 z-[120]" style="backdrop-filter:blur(14px)">
@@ -404,11 +705,11 @@ a{text-decoration:none;color:inherit}
       <span>龚子轩 <span class="text-slate-500 text-xs font-semibold">GONG ZIXUAN</span></span>
     </a>
     <nav class="hidden md:flex items-center gap-2.5 text-sm">
-      <a href="#highlights" class="nav-btn"><span class="nav-bg"></span><span class="nav-face">亮点</span></a>
-      <a href="#projects"   class="nav-btn"><span class="nav-bg"></span><span class="nav-face">项目</span></a>
-      <a href="#experience" class="nav-btn"><span class="nav-bg"></span><span class="nav-face">经历</span></a>
-      <a href="#skills"     class="nav-btn"><span class="nav-bg"></span><span class="nav-face">技能</span></a>
       <a href="#education"  class="nav-btn"><span class="nav-bg"></span><span class="nav-face">教育</span></a>
+      <a href="#services"   class="nav-btn"><span class="nav-bg"></span><span class="nav-face">技能</span></a>
+      <a href="#experience" class="nav-btn"><span class="nav-bg"></span><span class="nav-face">经历</span></a>
+      <a href="#projects"   class="nav-btn"><span class="nav-bg"></span><span class="nav-face">项目</span></a>
+      <a href="#highlights" class="nav-btn"><span class="nav-bg"></span><span class="nav-face">亮点</span></a>
     </nav>
     <div class="flex items-center gap-2">
       <button id="printBtn" title="打印 / 导出 PDF"
@@ -420,6 +721,15 @@ a{text-decoration:none;color:inherit}
         <i data-lucide="hand" class="w-4 h-4"></i>打个招呼</a>
     </div>
   </div>
+  <!-- 移动端导航：横向可滚动药丸条（桌面隐藏） -->
+  <nav class="mobile-nav md:hidden" aria-label="移动端章节导航">
+    <a href="#education"  class="mnav-pill">教育</a>
+    <a href="#services"   class="mnav-pill">技能站</a>
+    <a href="#experience" class="mnav-pill">经历</a>
+    <a href="#skills"     class="mnav-pill">技能矩阵</a>
+    <a href="#projects"   class="mnav-pill">项目</a>
+    <a href="#highlights" class="mnav-pill">亮点</a>
+  </nav>
 </header>
 
 <span id="top"></span>
@@ -582,7 +892,22 @@ const resume = {
     {k:"plane",t:"纸飞机超距飞行 / 回旋挑战优胜",d:"个人项目，2025"}
   ],
   certImage:{src:"AI证书-1.png",cap:"AI 证书集 · 第 1 张（其余 22 项持续更新中）"},
-  interests:["折纸飞机","跑步","乒乓球","羽毛球","骑行","改装与调试"]
+  interests:["折纸飞机","跑步","乒乓球","羽毛球","骑行","改装与调试"],
+  /* SERVICES：我能为你做什么（技能站顶部，左极简字 + 右图卡片，交互式悬浮） */
+  services:[
+    {
+      no:"01", title:"AI Coding",
+      desc:"探索人机协作边界。通过定制化 Prompt 与 Python 脚本构建专属自动化工作流，打破效能瓶颈，彻底解放生产力。",
+      tags:["SYS_CORE","PYTHON","PROMPT ENG","LLM"],
+      img:"https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=futuristic%20AI%20coding%20workspace%2C%20glowing%20cyan%20code%20streams%20flowing%20through%20dark%20terminal%2C%20neural%20network%20nodes%2C%20cinematic%20dark%20tech%20atmosphere%2C%20deep%20blue%20and%20cyan%20lighting%2C%20abstract%20digital%20automation%2C%20high%20detail%2C%208k&image_size=portrait_16_9"
+    },
+    {
+      no:"02", title:"PPT 优化",
+      desc:"视觉叙事重塑。无论是顶级商业路演还是核心学术汇报，从底层逻辑梳理到影院级定制动效，让你的演示具备压倒性说服力。",
+      tags:["VISUAL","KEYNOTE","MOTION","UI DESIGN"],
+      img:"https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=elegant%20minimalist%20presentation%20design%20on%20dark%20stage%2C%20glowing%20geometric%20slides%20floating%2C%20cinematic%20spotlight%2C%20premium%20keynote%20visual%20storytelling%2C%20cyan%20and%20purple%20accent%20lighting%2C%20modern%20tech%20aesthetic%2C%20high%20detail%2C%208k&image_size=portrait_16_9"
+    }
+  ]
 };
 
 /* ================= 工具函数 ================= */
@@ -596,9 +921,51 @@ const CARD = "glass lift reveal p-6 sm:p-7";           // 统一毛玻璃卡片
 const ic = (name,cls="w-5 h-5")=>`<i data-lucide="${name}" class="${cls}"></i>`;
 /* 官方 GitHub 图标（内联 SVG，fill:currentColor 颜色跟随文字/背景，不依赖 CDN） */
 const githubSVG = (cls="w-4 h-4")=>`<svg class="${cls}" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="width:1em;height:1em;min-width:16px" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12.02c0 5.1 3.29 9.42 7.86 10.95.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 2.9-.39c.98 0 1.97.13 2.9.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.05.78 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.21.68.8.56 4.56-1.53 7.85-5.85 7.85-10.95C23.5 5.73 18.27.5 12 .5Z"/></svg>`;
+/* 把文本拆成逐字符 span，用于英雄标题的错峰渐入动画（每字延迟递增）；空格保留占位不裁剪 */
+const splitChars = (str,base=.15)=>[...str].map((ch,i)=>
+  ch===" " ? `<span class="ch sp" style="animation-delay:${(base+i*.06).toFixed(2)}s">&nbsp;</span>`
+           : `<span class="ch" style="animation-delay:${(base+i*.06).toFixed(2)}s">${ch}</span>`
+).join("");
 
 /* ================= Bento 渲染 ================= */
+/* 卡片主题背景图（每张卡专属，观感与 SERVICES 一致）——统一走文生图接口，暗色科技调 */
+const T2I = "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=";
+const cardBg = {
+  hero:     T2I+"minimal%20dark%20tech%20workspace%20desk%20with%20laptop%20and%20soft%20cyan%20blue%20light%2C%20clean%20modern%20professional%20identity%2C%20subtle%20circuit%20bokeh%2C%20cinematic%20moody%20atmosphere%2C%20high%20detail%2C%208k&image_size=landscape_16_9",
+  profile:  T2I+"portrait%20studio%20dark%20cinematic%20background%2C%20soft%20cyan%20rim%20light%2C%20bokeh%2C%20premium%20moody%20atmosphere%2C%20deep%20black%20tones%2C%20high%20detail&image_size=portrait_16_9",
+  edu:      T2I+"prestigious%20university%20library%20at%20night%2C%20towering%20bookshelves%2C%20glowing%20blue%20ambient%20light%2C%20cinematic%20dark%20academic%20atmosphere%2C%20knowledge%20and%20study%2C%20high%20detail%2C%208k&image_size=landscape_16_9",
+  cert:     T2I+"golden%20trophy%20and%20certificates%20on%20dark%20surface%2C%20elegant%20award%20ceremony%20lighting%2C%20emerald%20and%20cyan%20accents%2C%20cinematic%20dark%20premium%20mood%2C%20high%20detail%2C%208k&image_size=portrait_16_9",
+  interest: T2I+"abstract%20creative%20passion%20collage%2C%20music%20waveforms%20and%20paint%20splashes%20on%20dark%20background%2C%20vibrant%20cyan%20purple%20neon%2C%20artistic%20energy%2C%20cinematic%20mood%2C%20high%20detail%2C%208k&image_size=landscape_16_9",
+  skills:   T2I+"futuristic%20holographic%20data%20dashboard%2C%20glowing%20progress%20bars%20and%20neural%20nodes%2C%20dark%20tech%20interface%2C%20cyan%20and%20indigo%20light%20streams%2C%20cinematic%2C%20high%20detail%2C%208k&image_size=portrait_16_9",
+  exp:      T2I+"modern%20tech%20office%20workspace%20at%20dusk%2C%20teamwork%20and%20engineering%2C%20glowing%20monitors%2C%20cinematic%20dark%20blue%20atmosphere%2C%20professional%20mood%2C%20high%20detail%2C%208k&image_size=landscape_16_9",
+  project:  T2I+"autonomous%20driving%20AI%20visualization%2C%20self%20driving%20car%20sensor%20lidar%20point%20cloud%2C%20glowing%20cyan%20data%20on%20dark%20road%2C%20futuristic%20cinematic%20tech%2C%20high%20detail%2C%208k&image_size=landscape_16_9",
+  stack:    T2I+"abstract%20technology%20stack%20layers%2C%20floating%20glowing%20code%20blocks%20and%20chips%20on%20dark%20background%2C%20cyan%20indigo%20gradient%20light%2C%20cinematic%2C%20high%20detail%2C%208k&image_size=portrait_16_9",
+  highlight:T2I+"glowing%20data%20growth%20chart%20and%20metrics%20on%20dark%20background%2C%20upward%20trend%2C%20cyan%20emerald%20neon%20light%2C%20cinematic%20premium%20tech%20mood%2C%20high%20detail%2C%208k&image_size=square"
+};
+/* 技能矩阵四大类各自的主题背景图（技能站同款卡片用） */
+const skillBg = [
+  T2I+"glowing%20python%20and%20c%20source%20code%20on%20dark%20screen%2C%20software%20development%20matrix%2C%20cyan%20indigo%20light%2C%20cinematic%20dark%20tech%2C%20high%20detail%2C%208k&image_size=portrait_16_9",
+  T2I+"self%20driving%20car%20perception%20lidar%20point%20cloud%20and%20sensor%20fusion%20on%20dark%20road%2C%20autonomous%20driving%20tech%2C%20glowing%20cyan%20data%2C%20cinematic%2C%20high%20detail%2C%208k&image_size=portrait_16_9",
+  T2I+"cybersecurity%20hacker%20terminal%20with%20green%20cyan%20code%2C%20network%20security%20shield%20hologram%2C%20dark%20moody%20tech%2C%20cinematic%2C%20high%20detail%2C%208k&image_size=portrait_16_9",
+  T2I+"generative%20AI%20neural%20network%20art%20and%20creative%20design%20workspace%2C%20glowing%20nodes%20and%20color%20palette%2C%20dark%20cinematic%20tech%2C%20high%20detail%2C%208k&image_size=portrait_16_9"
+];
+/* 把一张普通 .glass 卡升级为图底卡：注入 图片/遮罩/辉光 三层（在内容之下），并补上交互类 */
+function withPhoto(card,url){
+  card.classList.add("glass-photo");
+  const img   = el("div","gp-img");   img.style.backgroundImage = `url('${url}')`;
+  const shade = el("div","gp-shade");
+  const glow  = el("div","gp-glow");  glow.setAttribute("aria-hidden","true");
+  // 三层插到最前，保证在内容之下
+  card.insertBefore(glow,card.firstChild);
+  card.insertBefore(shade,card.firstChild);
+  card.insertBefore(img,card.firstChild);
+  return card;
+}
+
 function render(){
+  /* ---- 首屏：个人 FLAG 全屏宣言（当作首页，参考 liuhao.online 纯文字英雄区） ---- */
+  app.appendChild(flagHero());
+
   const grid = el("div","bento");
 
   /* ---- 主卡：姓名 + 简介 + 联系方式（跨 2 列） ---- */
@@ -608,11 +975,27 @@ function render(){
 
   app.appendChild(grid);
 
-  /* ---- 亮点指标看板 ---- */
-  app.appendChild(sectionTitle("highlights","zap","亮点成果","可量化的关键成绩"));
-  const hg = el("div","bento");
-  resume.highlights.forEach(h=>hg.appendChild(metricCard(h)));
-  app.appendChild(hg);
+  /* ==== 排版顺序：教育 → 兴趣 → 技能站(SERVICES) → 工作/实践经历 → 技能矩阵(SKILLS) → 项目 → 亮点 ==== */
+
+  /* ---- 教育与证书（学习背景） ---- */
+  app.appendChild(sectionTitle("education","graduation-cap","教育与证书","学历背景 · 获奖与认证"));
+  const eg = el("div","bento");
+  eg.appendChild(eduCard());
+  eg.appendChild(certCard());
+  app.appendChild(eg);
+
+  /* ---- 兴趣爱好 ---- */
+  app.appendChild(interestCard());
+
+  /* ---- 技能站：SERVICES（我能为你做什么，极简左文右图卡片） ---- */
+  app.appendChild(servicesSection());
+
+  /* ---- 经历时间轴（占满整行）——与技能矩阵调换到技能矩阵之前 ---- */
+  app.appendChild(sectionTitle("experience","briefcase","工作 / 实践经历","横向流动时间轴"));
+  app.appendChild(experienceCard());
+
+  /* ---- 技能矩阵：SKILLS（技能站同款左文右图卡片形式） ---- */
+  app.appendChild(skillsSection());
 
   /* ---- 项目（跨 2 列大卡 + 技能聚合 1 列） ---- */
   app.appendChild(sectionTitle("projects","folder-git-2","项目经历","核心项目与技术栈"));
@@ -621,25 +1004,26 @@ function render(){
   pg.appendChild(skillPillCard());          // 技能聚合胶囊卡（1 列）
   app.appendChild(pg);
 
-  /* ---- 经历时间轴（占满整行） ---- */
-  app.appendChild(sectionTitle("experience","briefcase","工作 / 实践经历","横向流动时间轴"));
-  app.appendChild(experienceCard());
+  /* ---- 亮点指标看板 ---- */
+  app.appendChild(sectionTitle("highlights","zap","亮点成果","可量化的关键成绩"));
+  const hg = el("div","bento");
+  resume.highlights.forEach(h=>hg.appendChild(metricCard(h)));
+  app.appendChild(hg);
+}
 
-  /* ---- 技能矩阵 ---- */
-  app.appendChild(sectionTitle("skills","sliders-horizontal","技能矩阵","编程 · 智能驾驶 · 安全 · AI 应用"));
-  const sg = el("div","bento");
-  resume.skills.forEach(c=>sg.appendChild(skillMatrixCard(c)));
-  app.appendChild(sg);
-
-  /* ---- 教育与证书 ---- */
-  app.appendChild(sectionTitle("education","graduation-cap","教育与证书","学历背景 · 获奖与认证"));
-  const eg = el("div","bento");
-  eg.appendChild(eduCard());
-  eg.appendChild(certCard());
-  app.appendChild(eg);
-
-  /* ---- 兴趣 ---- */
-  app.appendChild(interestCard());
+/* 首屏个人 FLAG 全屏宣言（纯文字英雄区，逐行淡入 + 向下滚动提示） */
+function flagHero(){
+  const s = el("section","flag-hero");
+  s.id = "flag";
+  s.innerHTML = `
+    <div class="flag-eyebrow fx d1">${resume.enName} · 龚子轩</div>
+    <h1 class="flag-name fx d2">造我所想，<span class="inf">驭见智能</span></h1>
+    <p class="flag-slogan fx d3">做智能驾驶时代的<b>白帽机械师</b>。</p>
+    <p class="flag-sub fx d4">${resume.role}<br>在机械与 AI 的交汇处，以工程之手重构无限可能。</p>
+    <div class="flag-scroll fx d4" aria-hidden="true">
+      <span>SCROLL</span><span class="fs-line"></span>
+    </div>`;
+  return s;
 }
 
 function sectionTitle(id,icon,title,sub){
@@ -659,11 +1043,14 @@ function sectionTitle(id,icon,title,sub){
 /* 主卡 */
 function bentoHero(){
   const c = el("div",CARD+" col-2");
+  c.id = "bentoHero";
   c.setAttribute("data-tilt","");
   c.innerHTML = `
+    <div class="hero-bg" style="background-image:url('${cardBg.hero}')" aria-hidden="true"></div>
+    <div class="hero-bg-shade" aria-hidden="true"></div>
     <div class="chip mb-4">${ic("sparkles","w-3.5 h-3.5")} 求职中 · Open to work</div>
     <h1 class="text-4xl sm:text-5xl font-extrabold text-white leading-[1.1]">
-      你好，我是 <span class="metric">${resume.name}</span>
+      你好，我是 <span class="hero-name">${splitChars(resume.name)}</span>
     </h1>
     <p class="mt-3 text-cyan-400 font-semibold text-lg flex items-center gap-2">${ic("navigation","w-4.5 h-4.5")}${resume.role}</p>
     ${resume.flag?`<div class="mt-4 flex items-start gap-2.5 p-3.5 rounded-2xl text-slate-300 text-sm"
@@ -714,7 +1101,7 @@ function bentoProfile(){
       <span id="typed" class="text-cyan-300"></span><span class="cursor"></span>
     </div>
     <div class="mt-4 text-xs text-slate-500 flex items-center gap-1.5">${ic("map-pin","w-3.5 h-3.5")}北京 · Beijing</div>`;
-  return c;
+  return withPhoto(c,cardBg.profile);
 }
 
 /* 指标看板卡 */
@@ -726,7 +1113,7 @@ function metricCard(h){
     <div class="metric text-4xl sm:text-5xl" data-count="${h.num}">${h.num}</div>
     <div class="mt-2 font-bold text-white text-[15px]">${h.lbl}</div>
     <div class="mt-1 text-slate-400 text-xs leading-relaxed">${h.desc}</div>`;
-  return c;
+  return withPhoto(c,cardBg.highlight);
 }
 
 /* 项目卡（首个跨 2 列 + 证书图；其余 1 列） */
@@ -754,7 +1141,7 @@ function projectCard(p,big){
       </div>
       ${img}
     </div>`;
-  return c;
+  return withPhoto(c,cardBg.project);
 }
 
 /* 技能聚合胶囊卡（1 列） */
@@ -766,7 +1153,7 @@ function skillPillCard(){
     <div class="flex items-center gap-2 text-cyan-400">${ic("layers","w-4.5 h-4.5")}<span class="text-xs font-bold tracking-wide">TECH STACK</span></div>
     <h3 class="mt-1 text-lg font-extrabold text-white">技术栈聚合</h3>
     <div class="mt-4 flex flex-wrap gap-2">${all.map(k=>`<span class="chip">${k}</span>`).join("")}</div>`;
-  return c;
+  return withPhoto(c,cardBg.stack);
 }
 
 /* 经历时间轴（整行 3 列，横向流动） */
@@ -791,24 +1178,7 @@ function experienceCard(){
       </div>
     </div>`).join("");
   c.innerHTML = `<div class="flex flex-col lg:flex-row gap-8">${cols}</div>`;
-  return c;
-}
-
-/* 技能矩阵卡（进度条） */
-function skillMatrixCard(cat){
-  const c = el("div",CARD);
-  c.setAttribute("data-tilt","");
-  c.innerHTML = `
-    <div class="flex items-center gap-2.5 mb-4">
-      <span class="grid place-items-center w-9 h-9 rounded-xl text-cyan-300 border border-cyan-400/20" style="background:rgba(34,211,238,.08)">${ic(cat.icon,"w-4.5 h-4.5")}</span>
-      <h3 class="font-extrabold text-white">${cat.cat}</h3>
-    </div>
-    ${cat.items.map(([n,v])=>`
-      <div class="mb-3.5 last:mb-0">
-        <div class="flex justify-between text-[13px] mb-1.5"><span class="text-slate-300 font-semibold">${n}</span><span class="text-slate-500">${v}%</span></div>
-        <div class="h-2 rounded-full bg-white/5 overflow-hidden"><i class="block h-full rounded-full" data-bar="${v}" style="width:0;background:linear-gradient(90deg,#22d3ee,#818cf8)"></i></div>
-      </div>`).join("")}`;
-  return c;
+  return withPhoto(c,cardBg.exp);
 }
 
 /* 教育卡 */
@@ -826,7 +1196,7 @@ function eduCard(){
         <div class="text-cyan-400 font-semibold text-sm mt-1">${e.degree}</div>
         <ul class="mt-3 space-y-2">${e.points.map(p=>`<li class="flex gap-2 text-slate-400 text-[13.5px]">${ic("chevron-right","w-4 h-4 text-cyan-400 shrink-0 mt-0.5")}<span>${p}</span></li>`).join("")}</ul>
       </div>`).join("")}`;
-  return c;
+  return withPhoto(c,cardBg.edu);
 }
 
 /* 证书卡 */
@@ -842,7 +1212,7 @@ function certCard(){
           <div><div class="font-bold text-white text-sm">${ct.t}</div><div class="text-slate-500 text-xs mt-0.5">${ct.d}</div></div>
         </div>`).join("")}
     </div>`;
-  return c;
+  return withPhoto(c,cardBg.cert);
 }
 
 /* 兴趣卡 */
@@ -852,13 +1222,99 @@ function interestCard(){
   c.innerHTML = `
     <div class="flex items-center gap-2 text-cyan-400 mb-3">${ic("heart","w-4.5 h-4.5")}<span class="text-xs font-bold">兴趣与特质</span></div>
     <div class="flex flex-wrap gap-2">${resume.interests.map(i=>`<span class="chip">${i}</span>`).join("")}</div>`;
-  return c;
+  return withPhoto(c,cardBg.interest);
+}
+
+/* ================= SERVICES 技能站（参考图：左极简字 · 右图卡片，交互式悬浮） ================= */
+function servicesSection(){
+  const wrap = el("section","svc reveal mt-16 mb-4");
+  wrap.id = "services";
+  const cards = resume.services.map(s=>`
+    <article class="svc-card" tabindex="0">
+      <div class="svc-card-img" style="background-image:url('${s.img}')"></div>
+      <div class="svc-card-shade"></div>
+      <span class="svc-card-no">${s.no}</span>
+      <div class="svc-card-body">
+        <h3 class="svc-card-title">${s.title}</h3>
+        <p class="svc-card-desc">${s.desc}<span class="svc-caret"></span></p>
+        <div class="svc-card-tags">${s.tags[0]} <b>//</b> ${s.tags.slice(1).join(" <i>·</i> ")}</div>
+      </div>
+      <span class="svc-card-glow" aria-hidden="true"></span>
+    </article>`).join("");
+  wrap.innerHTML = `
+    <div class="svc-grid">
+      <!-- 左侧：极简标题栏（呼应参考图） -->
+      <div class="svc-left">
+        <div class="svc-index">02</div>
+        <h2 class="svc-heading">SERVICES</h2>
+        <div class="svc-vlabel">SKILLS · 技能站</div>
+        <p class="svc-sub">— 凭手艺吃饭，<br>我能为你做什么：<span class="svc-caret"></span></p>
+        <div class="svc-nums">
+          ${resume.services.map((s,i)=>`<span class="${i===0?'on':''}">0${i+1}</span>`).join("")}
+        </div>
+      </div>
+      <!-- 右侧：服务图卡 -->
+      <div class="svc-cards">${cards}</div>
+    </div>`;
+  return wrap;
+}
+
+/* ================= SKILLS 技能矩阵（技能站同款：左极简字 · 右图卡片，卡内含能力进度条） ================= */
+function skillsSection(){
+  const wrap = el("section","svc reveal mt-16 mb-4");
+  wrap.id = "skills";
+  const cards = resume.skills.map((cat,i)=>`
+    <article class="svc-card skl-card" tabindex="0">
+      <div class="svc-card-img" style="background-image:url('${skillBg[i]||skillBg[0]}')"></div>
+      <div class="svc-card-shade"></div>
+      <span class="svc-card-no">0${i+1}</span>
+      <div class="svc-card-body">
+        <div class="skl-head">
+          <span class="skl-ic">${ic(cat.icon,"w-4.5 h-4.5")}</span>
+          <h3 class="svc-card-title" style="margin:0">${cat.cat}</h3>
+        </div>
+        <div class="skl-bars">
+          ${cat.items.map(([n,v])=>`
+            <div class="skl-row">
+              <div class="skl-row-top"><span>${n}</span><span class="skl-pct">${v}%</span></div>
+              <div class="skl-track"><i class="skl-fill" data-bar="${v}" style="width:0"></i></div>
+            </div>`).join("")}
+        </div>
+      </div>
+      <span class="svc-card-glow" aria-hidden="true"></span>
+    </article>`).join("");
+  wrap.innerHTML = `
+    <div class="svc-grid">
+      <!-- 左侧：极简标题栏（英文放左侧 + 因创造而快乐的宣言） -->
+      <div class="svc-left">
+        <div class="svc-index">04</div>
+        <h2 class="svc-heading">SKILLS</h2>
+        <div class="svc-vlabel">MATRIX · 技能矩阵</div>
+        <p class="svc-sub">— 因创造而快乐，<br>我把热爱磨成本事：<span class="svc-caret"></span></p>
+        <div class="svc-nums">
+          ${resume.skills.map((s,i)=>`<span class="${i===0?'on':''}">0${i+1}</span>`).join("")}
+        </div>
+      </div>
+      <!-- 右侧：技能矩阵图卡 -->
+      <div class="svc-cards">${cards}</div>
+    </div>`;
+  return wrap;
 }
 
 /* ================= 执行渲染 ================= */
 render();
 $("#year").textContent = new Date().getFullYear();
 $("#updated").textContent = new Date().toLocaleDateString("zh-CN",{year:"numeric",month:"long",day:"numeric"});
+
+/* 姓名逐字动画兜底：动画预计结束后强制锁定可见态，避免个别环境 animation-fill 不生效导致文字隐身 */
+(function ensureHeroName(){
+  const chars = document.querySelectorAll(".hero-name .ch");
+  if(!chars.length) return;
+  const lock = ()=>chars.forEach(c=>{ c.style.opacity="1"; c.style.transform="none"; });
+  // 最后一个字符动画结束即锁定；同时设总兜底定时器（延迟递增 + 时长，留足余量）
+  chars.forEach(c=>c.addEventListener("animationend",lock,{once:true}));
+  setTimeout(lock, 300 + chars.length*80 + 800);
+})();
 
 /* ================= 库加载 & 增强（全部为非阻塞增强，失败也不影响可用性） ================= */
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.async=true;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
@@ -867,23 +1323,29 @@ function loadScript(src){return new Promise((res,rej)=>{const s=document.createE
 (function initBgVideo(){
   const video = $("#bgVideo"); if(!video) return;
   const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
-  const smallScreen = matchMedia("(max-width:768px)").matches;
   const conn = navigator.connection || {};
   const saveData = conn.saveData === true;
   const slowNet = /(^|-)2g$/.test(conn.effectiveType||"") || (typeof conn.downlink==="number" && conn.downlink>0 && conn.downlink<1.5);
-  // 移动端/省流/慢网/减动效：不加载视频，保留下方动态光斑背景（省流量、避免卡顿与自动播放限制）
-  if(reduce || smallScreen || saveData || slowNet){ return; }
+  // 省流 / 慢网 / 减动效：不加载视频，保留下方动态光斑背景（省流量、避免卡顿）。
+  // 手机端保留动态视频背景（muted+playsinline 可自动播放）——仅在弱网/省流时才降级。
+  if(reduce || saveData || slowNet){ return; }
 
   video.setAttribute("poster","thumbnails/329816cb-b532-4347-b5b8-6e4349b6f917.png");
   const source = document.createElement("source");
   source.src = "https://r2.motionsites.dev/motionsites/assets/f11ea040b8f4.mp4";
   source.type = "video/mp4";
   video.appendChild(source);
-  video.preload = "auto";
+  // 手机端不强制 auto 预载，等可播放时再淡入，兼顾流量与体验
+  video.preload = matchMedia("(max-width:768px)").matches ? "metadata" : "auto";
+  video.muted = true;                 // 确保静音，满足移动端自动播放策略
+  video.setAttribute("muted","");
   video.load();
   video.addEventListener("canplay",()=>{ video.classList.add("ready"); },{once:true});
   const p = video.play?.();
-  if(p && p.catch) p.catch(()=>{ /* 自动播放被拦截：静默降级为光斑背景 */ });
+  if(p && p.catch) p.catch(()=>{ /* 自动播放被拦截：等待首次交互再尝试（iOS 低电量模式等） */ });
+  // iOS/部分安卓：自动播放被拦时，用户首次触摸/点击后再补一次播放
+  const resume = ()=>{ video.play?.().then(()=>video.classList.add("ready")).catch(()=>{}); };
+  ["touchstart","click"].forEach(ev=>addEventListener(ev,resume,{once:true,passive:true}));
   // 标签页隐藏时暂停，回到前台恢复，节省资源
   document.addEventListener("visibilitychange",()=>{ document.hidden ? video.pause() : video.play?.().catch(()=>{}); });
 })();
@@ -1051,7 +1513,7 @@ addEventListener("keydown",e=>{if(e.key==="Escape")lightbox.classList.remove("op
 $("#printBtn")?.addEventListener("click",()=>window.print());
 
 // 收集所有可作为“下一节”的锚点区块，按文档位置排序
-const sectionIds = ["highlights","projects","experience","skills","education"];
+const sectionIds = ["education","services","skills","experience","projects","highlights"];
 function sectionTops(){
   return sectionIds.map(id=>document.getElementById(id)).filter(Boolean)
     .map(elm=>elm.getBoundingClientRect().top + scrollY - 80)
@@ -1194,6 +1656,89 @@ const playlist = [
 
   // 初始化：载入第一首（不自动播放，避免浏览器拦截 & 打扰用户）
   load(0,false);
+})();
+
+/* ================= 高级感增强模块（参考 liuhao.online：点+圈光标 / 磁性按钮 / 卡片光斑 / 装饰环视差） =================
+   全部为渐进增强：具备精确指针(鼠标)且未开启减动效时才启用；触摸设备与 reduce-motion 场景自动跳过，保留系统光标。 */
+const _finePointer = matchMedia("(hover:hover) and (pointer:fine)").matches;
+const _reduceMotion = matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+/* ---- 1) 自定义鼠标光标：实心小点精确跟随 + 空心外圈缓动(lerp)延迟跟随 ---- */
+(function initCursor(){
+  if(!_finePointer || _reduceMotion) return;              // 触摸 / 减动效：使用系统光标
+  const dot=$("#cursorDot"), ring=$("#cursorRing");
+  if(!dot||!ring) return;
+  document.documentElement.classList.add("cursor-on");    // 隐藏系统光标（CSS）
+  let mx=innerWidth/2, my=innerHeight/2;                   // 目标（真实鼠标）坐标
+  let rx=mx, ry=my;                                        // 外圈当前坐标（缓动逼近）
+  let raf=null, moved=false;
+  function frame(){
+    // 外圈以 lerp 缓动追赶鼠标，形成「圈滞后于点」的高级质感
+    rx += (mx-rx)*0.18; ry += (my-ry)*0.18;
+    dot.style.transform  = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
+    ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+    raf = requestAnimationFrame(frame);
+  }
+  addEventListener("mousemove",e=>{
+    mx=e.clientX; my=e.clientY;
+    if(!moved){ moved=true; dot.classList.remove("hidden"); ring.classList.remove("hidden"); }
+    if(!raf) frame();
+  },{passive:true});
+  // 移出窗口淡出，回到窗口恢复
+  document.addEventListener("mouseleave",()=>{ dot.classList.add("hidden"); ring.classList.add("hidden"); });
+  document.addEventListener("mouseenter",()=>{ dot.classList.remove("hidden"); ring.classList.remove("hidden"); });
+  // 按下 / 松开：外圈收缩反馈
+  addEventListener("mousedown",()=>{ dot.classList.add("down"); ring.classList.add("down"); });
+  addEventListener("mouseup",  ()=>{ dot.classList.remove("down"); ring.classList.remove("down"); });
+  // 悬停可交互元素：外圈放大染色（事件委托，覆盖动态渲染的内容）
+  const interactiveSel = 'a,button,input,textarea,select,label,[role="button"],.copy-btn,.chip,.scroll-icon,[data-full],.nav-btn,.svc-card,.glass-photo';
+  document.addEventListener("mouseover",e=>{ if(e.target.closest(interactiveSel)){ dot.classList.add("hover"); ring.classList.add("hover"); } });
+  document.addEventListener("mouseout", e=>{ if(e.target.closest(interactiveSel)){ dot.classList.remove("hover"); ring.classList.remove("hover"); } });
+})();
+
+/* ---- 2) 磁性按钮：鼠标靠近时按钮朝光标轻微位移，离开复位（仅精确指针 & 非减动效） ---- */
+(function initMagnetic(){
+  if(!_finePointer || _reduceMotion) return;
+  const STRENGTH=0.32;                                   // 吸附强度（0~1）
+  function bind(node){
+    node.style.transition = node.style.transition || "transform .25s cubic-bezier(.2,.8,.2,1)";
+    node.addEventListener("mousemove",e=>{
+      const r=node.getBoundingClientRect();
+      const dx=e.clientX-(r.left+r.width/2), dy=e.clientY-(r.top+r.height/2);
+      node.style.transform=`translate(${dx*STRENGTH}px,${dy*STRENGTH}px)`;
+    });
+    node.addEventListener("mouseleave",()=>{ node.style.transform="translate(0,0)"; });
+  }
+  // 主要 CTA：打个招呼、复制按钮、项目外链、打印按钮、点赞
+  document.querySelectorAll("#helloBtn,#printBtn,.copy-btn,#likeBtn").forEach(bind);
+})();
+
+/* ---- 3) 卡片鼠标光斑跟随：写入 --sx/--sy(卡片内坐标) 与 --sp(悬停=1)，配合 ::after 光晕 ---- */
+(function initSpotlight(){
+  if(!_finePointer) return;                              // 光斑仅在鼠标设备生效
+  document.querySelectorAll(".glass").forEach(card=>{
+    card.addEventListener("mousemove",e=>{
+      const r=card.getBoundingClientRect();
+      card.style.setProperty("--sx",(e.clientX-r.left)+"px");
+      card.style.setProperty("--sy",(e.clientY-r.top)+"px");
+      card.style.setProperty("--sp","1");
+    });
+    card.addEventListener("mouseleave",()=>card.style.setProperty("--sp","0"));
+  });
+})();
+
+/* ---- 4) 装饰同心圆环：随滚动做轻微视差位移，增强纵深（减动效时保持静止） ---- */
+(function initRingsParallax(){
+  const rings=$("#decoRings"); if(!rings || _reduceMotion) return;
+  let ticking=false;
+  addEventListener("scroll",()=>{
+    if(ticking) return; ticking=true;
+    requestAnimationFrame(()=>{
+      const shift = Math.min(120, scrollY*0.08);
+      rings.style.transform = `translateY(calc(-50% + ${shift}px))`;
+      ticking=false;
+    });
+  },{passive:true});
 })();
 
 onScroll();
