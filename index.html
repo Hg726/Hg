@@ -389,6 +389,10 @@ a{text-decoration:none;color:inherit}
 .pl-list li .idx{width:16px;text-align:center;font-size:11px;color:#64748b}
 .pl-list li.active .idx{color:#22d3ee}
 .pl-list li .nm{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 空音乐库占位行：不可点击、弱化配色 */
+.pl-list li.pl-empty{cursor:default;color:#64748b;font-style:italic}
+.pl-list li.pl-empty:hover{background:transparent;color:#64748b}
+.pl-list li.pl-empty .idx{color:#475569}
 /* 进度条 + 时间 */
 .pl-progwrap{margin-top:12px;display:flex;align-items:center;gap:9px}
 .pl-time{font-size:10.5px;color:#94a3b8;font-variant-numeric:tabular-nums;min-width:34px;text-align:center}
@@ -564,6 +568,82 @@ a{text-decoration:none;color:inherit}
 .light .glass-photo .gp-shade{background:linear-gradient(180deg,rgba(241,245,249,.35),rgba(241,245,249,.72))}
 @media(prefers-reduced-motion:reduce){.glass-photo .gp-img{transition:none}}
 
+/* ======================= 作品与娱乐：3D 入口卡（音乐 / 游戏） ======================= */
+.gal-grid{display:grid;grid-template-columns:1fr;gap:22px}
+@media(min-width:720px){.gal-grid{grid-template-columns:1fr 1fr;gap:26px}}
+.gal-card{position:relative;display:flex;flex-direction:column;justify-content:flex-end;text-align:left;
+  min-height:280px;border-radius:26px;padding:26px 24px;cursor:pointer;font:inherit;color:inherit;
+  width:100%;appearance:none;-webkit-tap-highlight-color:transparent}
+.gal-eyebrow{position:absolute;top:20px;left:24px;z-index:3;font-family:"Plus Jakarta Sans",sans-serif;
+  font-size:12px;font-weight:800;letter-spacing:.34em;color:#67e8f9;opacity:.9}
+.gal-ic{position:absolute;top:16px;right:22px;z-index:3;display:grid;place-items:center;width:52px;height:52px;
+  border-radius:16px;color:#e0f2fe;background:rgba(34,211,238,.14);border:1px solid rgba(103,232,249,.35);
+  transition:transform .4s cubic-bezier(.2,.8,.2,1),background .3s,color .3s}
+.gal-body{position:relative;z-index:3;display:flex;flex-direction:column}
+.gal-title{font-size:clamp(21px,3.2vw,26px);font-weight:800;color:#fff;letter-spacing:.01em}
+.gal-desc{margin-top:8px;font-size:13.5px;line-height:1.8;color:#cbd5e1;max-width:38ch}
+.gal-tags{margin-top:14px;display:flex;flex-wrap:wrap;gap:7px}
+.gal-tags i{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.04em;color:#a5f3fc;
+  padding:4px 10px;border-radius:999px;background:rgba(34,211,238,.12);border:1px solid rgba(103,232,249,.25)}
+.gal-go{margin-top:16px;display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;color:#67e8f9;
+  transition:gap .3s ease,color .3s ease}
+.gal-go svg{transition:transform .3s ease}
+/* 悬浮：图标放大转色、按钮箭头右移（上浮/图片放大/辉光由 .glass-photo + .lift 提供） */
+.gal-card:hover .gal-ic{transform:scale(1.08) rotate(-4deg);background:rgba(34,211,238,.22);color:#fff}
+.gal-card:hover .gal-go{gap:12px;color:#a5f3fc}
+.gal-card:hover .gal-go svg{transform:translateX(3px)}
+.gal-card:focus-visible{outline:2px solid rgba(34,211,238,.7);outline-offset:3px}
+.light .gal-title{color:#0b1220}.light .gal-desc{color:#334155}
+@media(max-width:480px){
+  .gal-card{min-height:240px;padding:22px 18px;border-radius:22px}
+  .gal-ic{width:46px;height:46px}
+  .gal-eyebrow{letter-spacing:.24em}
+}
+@media(prefers-reduced-motion:reduce){.gal-ic,.gal-go,.gal-go svg{transition:none}}
+
+/* ======================= 游戏选择弹窗（点击游戏入口卡片弹出） ======================= */
+.gm-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.gm-modal.open{display:flex}
+.gm-backdrop{position:absolute;inset:0;background:rgba(3,7,18,.7);backdrop-filter:blur(6px)}
+.gm-dialog{position:relative;width:min(560px,100%);max-height:min(80vh,640px);overflow:hidden auto;
+  border-radius:24px;border:1px solid rgba(255,255,255,.12);background:rgba(15,23,42,.96);
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.9);padding:22px 22px 24px;
+  animation:gmIn .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes gmIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+.gm-head{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+.gm-head .gm-hic{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;color:#67e8f9;
+  background:rgba(34,211,238,.12);border:1px solid rgba(103,232,249,.3)}
+.gm-title{font-size:19px;font-weight:800;color:#fff}
+.gm-sub{font-size:12.5px;color:#94a3b8;margin-top:1px}
+.gm-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border:none;border-radius:11px;cursor:pointer;
+  display:grid;place-items:center;color:#cbd5e1;background:rgba(255,255,255,.08);transition:background .2s,color .2s}
+.gm-close:hover{background:rgba(255,255,255,.18);color:#fff}
+.gm-list{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:460px){.gm-list{grid-template-columns:1fr 1fr}}
+.gm-item{display:flex;flex-direction:column;text-decoration:none;overflow:hidden;border-radius:16px;
+  border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);cursor:pointer;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s}
+.gm-item:hover{transform:translateY(-4px);border-color:rgba(34,211,238,.5);
+  box-shadow:0 18px 40px -18px rgba(34,211,238,.5)}
+.gm-item:focus-visible{outline:2px solid rgba(34,211,238,.7);outline-offset:2px}
+.gm-cover{position:relative;aspect-ratio:16/9;background-size:cover;background-position:center;
+  background-color:#0b1220;background-image:linear-gradient(135deg,rgba(34,211,238,.28),rgba(129,140,248,.28))}
+.gm-cover .gm-play{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:26px;
+  background:rgba(3,7,18,.28);opacity:0;transition:opacity .3s}
+.gm-item:hover .gm-play{opacity:1}
+.gm-info{padding:11px 13px}
+.gm-name{font-size:14px;font-weight:700;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gm-desc{font-size:11.5px;color:#94a3b8;margin-top:3px;line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gm-empty{grid-column:1/-1;text-align:center;color:#94a3b8;font-size:13.5px;line-height:2;padding:26px 10px}
+.gm-empty i{color:#475569;font-size:30px;display:block;margin-bottom:10px}
+.gm-empty code{color:#67e8f9;background:rgba(34,211,238,.1);padding:1px 6px;border-radius:5px;font-size:12px}
+.light .gm-dialog{background:rgba(255,255,255,.98);border-color:rgba(15,23,42,.12)}
+.light .gm-title{color:#0b1220}.light .gm-name{color:#0b1220}
+.light .gm-item{background:rgba(15,23,42,.04);border-color:rgba(15,23,42,.1)}
+.light .gm-close{background:rgba(15,23,42,.06);color:#334155}
+@media(prefers-reduced-motion:reduce){.gm-dialog{animation:none}.gm-item{transition:none}}
+
 /* ======================= 首屏个人 FLAG 全屏英雄区（参考 liuhao.online：纯文字宣言 + 全屏留白 + 淡入） ======================= */
 .flag-hero{position:relative;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;
   align-items:center;justify-content:center;text-align:center;padding:88px 20px 40px;overflow:hidden;
@@ -709,7 +789,7 @@ a{text-decoration:none;color:inherit}
       <a href="#services"   class="nav-btn"><span class="nav-bg"></span><span class="nav-face">技能</span></a>
       <a href="#experience" class="nav-btn"><span class="nav-bg"></span><span class="nav-face">经历</span></a>
       <a href="#projects"   class="nav-btn"><span class="nav-bg"></span><span class="nav-face">项目</span></a>
-      <a href="#highlights" class="nav-btn"><span class="nav-bg"></span><span class="nav-face">亮点</span></a>
+      <a href="#gallery"    class="nav-btn"><span class="nav-bg"></span><span class="nav-face">作品</span></a>
     </nav>
     <div class="flex items-center gap-2">
       <button id="printBtn" title="打印 / 导出 PDF"
@@ -729,6 +809,7 @@ a{text-decoration:none;color:inherit}
     <a href="#skills"     class="mnav-pill">技能矩阵</a>
     <a href="#projects"   class="mnav-pill">项目</a>
     <a href="#highlights" class="mnav-pill">亮点</a>
+    <a href="#gallery"    class="mnav-pill">作品</a>
   </nav>
 </header>
 
@@ -757,7 +838,7 @@ a{text-decoration:none;color:inherit}
 <!-- ============ 音乐播放器（右下角；小屏底部居中） ============ -->
 <section id="player" aria-label="音乐播放器">
   <!-- 收起态：悬浮式圆形音乐按钮（经典音乐图标） -->
-  <button id="plFab" class="pl-fab" aria-label="打开音乐播放器" aria-expanded="false" title="音乐播放器">
+  <button id="plFab" class="pl-fab" aria-label="播放音乐" aria-expanded="false" title="点击播放音乐">
     <span class="pl-fab-ring" aria-hidden="true"></span>
     <i class="fa-solid fa-music pl-fab-ic" aria-hidden="true"></i>
     <span class="pl-fab-eq" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -802,6 +883,22 @@ a{text-decoration:none;color:inherit}
 <div id="toast"></div>
 <canvas id="confetti" style="position:fixed;inset:0;z-index:350;pointer-events:none"></canvas>
 <div id="lightbox" role="dialog" aria-label="图片预览"><img id="lbImg" alt=""></div>
+
+<!-- 游戏选择弹窗（点击「游戏入口」卡片弹出，列出 games/ 下的可玩游戏） -->
+<div class="gm-modal" id="gmModal" role="dialog" aria-modal="true" aria-label="选择游戏" aria-hidden="true">
+  <div class="gm-backdrop" id="gmBackdrop"></div>
+  <div class="gm-dialog" role="document">
+    <button class="gm-close" id="gmClose" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+    <div class="gm-head">
+      <span class="gm-hic" aria-hidden="true"><i class="fa-solid fa-gamepad"></i></span>
+      <div>
+        <div class="gm-title">选择一个游戏</div>
+        <div class="gm-sub" id="gmSub">点开即玩 · 作品持续加入中</div>
+      </div>
+    </div>
+    <ul class="gm-list" id="gmList"><!-- JS 渲染 --></ul>
+  </div>
+</div>
 
 <script>
 /* ================= 简历数据（完全沿用原始内容，未做任何删改） ================= */
@@ -940,7 +1037,9 @@ const cardBg = {
   exp:      T2I+"modern%20tech%20office%20workspace%20at%20dusk%2C%20teamwork%20and%20engineering%2C%20glowing%20monitors%2C%20cinematic%20dark%20blue%20atmosphere%2C%20professional%20mood%2C%20high%20detail%2C%208k&image_size=landscape_16_9",
   project:  T2I+"autonomous%20driving%20AI%20visualization%2C%20self%20driving%20car%20sensor%20lidar%20point%20cloud%2C%20glowing%20cyan%20data%20on%20dark%20road%2C%20futuristic%20cinematic%20tech%2C%20high%20detail%2C%208k&image_size=landscape_16_9",
   stack:    T2I+"abstract%20technology%20stack%20layers%2C%20floating%20glowing%20code%20blocks%20and%20chips%20on%20dark%20background%2C%20cyan%20indigo%20gradient%20light%2C%20cinematic%2C%20high%20detail%2C%208k&image_size=portrait_16_9",
-  highlight:T2I+"glowing%20data%20growth%20chart%20and%20metrics%20on%20dark%20background%2C%20upward%20trend%2C%20cyan%20emerald%20neon%20light%2C%20cinematic%20premium%20tech%20mood%2C%20high%20detail%2C%208k&image_size=square"
+  highlight:T2I+"glowing%20data%20growth%20chart%20and%20metrics%20on%20dark%20background%2C%20upward%20trend%2C%20cyan%20emerald%20neon%20light%2C%20cinematic%20premium%20tech%20mood%2C%20high%20detail%2C%208k&image_size=square",
+  music:    T2I+"glowing%20music%20studio%20with%20neon%20sound%20waves%20and%20equalizer%20bars%2C%20vinyl%20record%20and%20synthesizer%2C%20cyan%20purple%20light%2C%20dark%20cinematic%20mood%2C%20high%20detail%2C%208k&image_size=landscape_4_3",
+  game:     T2I+"neon%20arcade%20gaming%20setup%20in%20the%20dark%2C%20glowing%20game%20controller%20and%20pixel%20light%20trails%2C%20cyberpunk%20cyan%20magenta%20light%2C%20cinematic%20immersive%20mood%2C%20high%20detail%2C%208k&image_size=landscape_4_3"
 };
 /* 技能矩阵四大类各自的主题背景图（技能站同款卡片用） */
 const skillBg = [
@@ -997,18 +1096,54 @@ function render(){
   /* ---- 技能矩阵：SKILLS（技能站同款左文右图卡片形式） ---- */
   app.appendChild(skillsSection());
 
-  /* ---- 项目（跨 2 列大卡 + 技能聚合 1 列） ---- */
-  app.appendChild(sectionTitle("projects","folder-git-2","项目经历","核心项目与技术栈"));
+  /* ---- 项目经历（融合：项目 + 亮点成果，共用一个大标题以减少留白） ---- */
+  app.appendChild(sectionTitle("projects","folder-git-2","项目经历","核心项目 · 技术栈 · 可量化成绩"));
+
+  /* 项目：跨 2 列大卡 + 技能聚合 1 列 */
   const pg = el("div","bento");
   resume.projects.forEach((p,i)=>pg.appendChild(projectCard(p,i===0)));
   pg.appendChild(skillPillCard());          // 技能聚合胶囊卡（1 列）
   app.appendChild(pg);
 
-  /* ---- 亮点指标看板 ---- */
-  app.appendChild(sectionTitle("highlights","zap","亮点成果","可量化的关键成绩"));
+  /* 亮点指标看板：用轻量小标题分隔（并入项目经历大区，不再单独占一段大标题的留白） */
+  app.appendChild(subHead("highlights","zap","亮点成果","可量化的关键成绩"));
   const hg = el("div","bento");
   resume.highlights.forEach(h=>hg.appendChild(metricCard(h)));
   app.appendChild(hg);
+
+  /* ---- 作品与娱乐：两个 3D 卡片入口（音乐作品 / 游戏入口） ---- */
+  app.appendChild(sectionTitle("gallery","gamepad-2","作品与娱乐","点开听我的音乐 · 玩我做的游戏"));
+  const gg = el("div","gal-grid");
+  gg.appendChild(galleryEntry({
+    key:"music", icon:"music", eyebrow:"MUSIC", title:"音乐作品展示",
+    desc:"AI 生成 · 多风格原创，点开即听。作品持续更新中。",
+    tags:["AI 生成","氛围","电子","国风"], bg:cardBg.music, action:"music"
+  }));
+  gg.appendChild(galleryEntry({
+    key:"game", icon:"gamepad-2", eyebrow:"PLAY", title:"游戏入口展示",
+    desc:"我做的网页小游戏，点开选一个直接开玩。作品持续加入中。",
+    tags:["网页游戏","即点即玩","持续更新"], bg:cardBg.game, action:"game"
+  }));
+  app.appendChild(gg);
+}
+
+/* 作品与娱乐 · 单个 3D 入口卡（图底 + 悬浮上浮 + 磁性 tilt，配色沿用其他卡片） */
+function galleryEntry(o){
+  const c = el("button","gal-card glass-photo lift");
+  c.type = "button";
+  c.setAttribute("data-tilt","");
+  c.setAttribute("data-gal", o.action);
+  c.setAttribute("aria-label", o.title);
+  c.innerHTML = `
+    <span class="gal-eyebrow">${o.eyebrow}</span>
+    <span class="gal-ic">${ic(o.icon,"w-7 h-7")}</span>
+    <span class="gal-body">
+      <span class="gal-title">${o.title}</span>
+      <span class="gal-desc">${o.desc}</span>
+      <span class="gal-tags">${o.tags.map(t=>`<i>${t}</i>`).join("")}</span>
+      <span class="gal-go">${o.action==="music"?"开始播放":"选择游戏"} ${ic("arrow-right","w-4 h-4")}</span>
+    </span>`;
+  return withPhoto(c, o.bg);
 }
 
 /* 首屏个人 FLAG 全屏宣言（纯文字英雄区，逐行淡入 + 向下滚动提示） */
@@ -1036,6 +1171,20 @@ function sectionTitle(id,icon,title,sub){
       <div class="text-[11px] tracking-[.18em] text-cyan-400 font-bold uppercase">${id}</div>
       <h2 class="text-2xl sm:text-3xl font-extrabold text-white leading-tight">${title}</h2>
       <p class="text-slate-500 text-sm">${sub}</p>
+    </div>`;
+  return s;
+}
+
+/* 轻量小标题：同大区内的子分栏（比 sectionTitle 更紧凑，减少段间留白）。仍带 id 供导航锚点使用 */
+function subHead(id,icon,title,sub){
+  const s = el("div","reveal mt-9 mb-4 flex items-center gap-2.5");
+  s.id=id;
+  s.innerHTML = `
+    <span class="grid place-items-center w-8 h-8 rounded-xl text-cyan-300 border border-cyan-400/20"
+          style="background:rgba(34,211,238,.08)">${ic(icon,"w-4 h-4")}</span>
+    <div class="flex items-baseline gap-2.5 flex-wrap">
+      <h3 class="text-lg sm:text-xl font-extrabold text-white leading-tight">${title}</h3>
+      <p class="text-slate-500 text-[13px]">${sub}</p>
     </div>`;
   return s;
 }
@@ -1513,7 +1662,7 @@ addEventListener("keydown",e=>{if(e.key==="Escape")lightbox.classList.remove("op
 $("#printBtn")?.addEventListener("click",()=>window.print());
 
 // 收集所有可作为“下一节”的锚点区块，按文档位置排序
-const sectionIds = ["education","services","skills","experience","projects","highlights"];
+const sectionIds = ["education","services","skills","experience","projects","highlights","gallery"];
 function sectionTops(){
   return sectionIds.map(id=>document.getElementById(id)).filter(Boolean)
     .map(elm=>elm.getBoundingClientRect().top + scrollY - 80)
@@ -1538,16 +1687,79 @@ addEventListener("keydown",e=>{
 });
 
 /* ================= 音乐播放器 ================= */
-/* ★ 替换音乐：直接改下面 playlist 数组即可。
-   src 支持两种：
-     · 在线链接： "https://.../song.mp3"
-     · 本地文件： "my-song.mp3"（把音频文件放到 index.html 同级目录）
-   建议放你自己生成的 AI 音乐；缺失/无法播放的曲目会自动跳到下一首。 */
-const playlist = [
+/* ============================================================
+   🎵 音乐库：把 mp3 直接丢进仓库的 music/ 文件夹即可自动上架
+   ------------------------------------------------------------
+   加载优先级（任一步失败自动回退下一步，播放器永不崩）：
+     1) GitHub Contents API 自动列出 music/ 下所有音频 —— 上传新歌即自动显示
+     2) music/music.json 清单（本地预览 / 想手动排序时用）
+     3) 下方内置示例列表（最终兜底）
+   部署在 GitHub Pages（*.github.io）时自动识别本仓库，零配置。
+   若部署在别处，请在 MUSIC_CONFIG 手动填 owner / repo。 */
+const MUSIC_CONFIG = {
+  owner: "",            // ← 部署到非 GitHub Pages 时填你的 GitHub 用户名，例如 "GongZixuan"
+  repo:  "",            // ← 以及仓库名，例如 "resume"；GitHub Pages 上留空即可自动识别
+  branch:"main",        // 分支名（默认 main，若你的默认分支是 master 请改这里）
+  dir:   "music"        // 音频所在文件夹
+};
+/* 内置示例列表（第 3 兜底）；正式使用时可保留或清空 */
+const fallbackPlaylist = [
   { title:"星轨 Starlight",   artist:"AI 生成 · 氛围", src:"music/starlight.mp3" },
   { title:"夜航 Night Drive", artist:"AI 生成 · 电子", src:"music/night-drive.mp3" },
   { title:"归零 Reset",        artist:"AI 生成 · 国风", src:"music/reset.mp3" }
 ];
+
+/* playlist 先给兜底，异步解析成功后由 setPlaylist() 替换并重渲染 */
+let playlist = fallbackPlaylist.slice();
+
+const AUDIO_EXT = /\.(mp3|wav|m4a|aac|ogg|oga|flac|opus|weba)$/i;
+/* 文件名 → {title, artist}：去扩展名 + 解码 URL；用 " - " 分隔「歌名 - 风格/艺术家」 */
+function parseTrackName(filename){
+  let base = decodeURIComponent(filename).replace(AUDIO_EXT,"").trim();
+  base = base.replace(/^\d+[\s._-]+/,"");          // 去掉开头的序号前缀（如 "01 "、"1_"）
+  const parts = base.split(/\s+-\s+/);
+  if(parts.length >= 2) return { title: parts[0].trim(), artist: parts.slice(1).join(" - ").trim() };
+  return { title: base, artist: "" };
+}
+/* 自动识别 GitHub Pages 上的 owner/repo（user.github.io 或 user.github.io/repo/） */
+function detectGitHubRepo(){
+  if(MUSIC_CONFIG.owner && MUSIC_CONFIG.repo) return { owner:MUSIC_CONFIG.owner, repo:MUSIC_CONFIG.repo };
+  const host = location.hostname, m = host.match(/^([^.]+)\.github\.io$/i);
+  if(!m) return null;
+  const owner = m[1];
+  const seg = location.pathname.split("/").filter(Boolean);
+  // 项目页：user.github.io/<repo>/...  用户主页：user.github.io → 仓库即 <user>.github.io
+  const repo = seg.length ? seg[0] : `${owner}.github.io`;
+  return { owner, repo };
+}
+/* 通过 GitHub Contents API 列出 music/ 下的音频文件 */
+async function fetchFromGitHub(){
+  const gh = detectGitHubRepo();
+  if(!gh) return null;
+  const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${MUSIC_CONFIG.dir}?ref=${MUSIC_CONFIG.branch}`;
+  const res = await fetch(url,{ headers:{ "Accept":"application/vnd.github+json" } });
+  if(!res.ok) throw new Error("GitHub API "+res.status);
+  const files = await res.json();
+  if(!Array.isArray(files)) return null;
+  return files
+    .filter(f => f.type==="file" && AUDIO_EXT.test(f.name))
+    .sort((a,b)=>a.name.localeCompare(b.name,"zh"))
+    .map(f => ({ ...parseTrackName(f.name), src: f.download_url || `${MUSIC_CONFIG.dir}/${encodeURIComponent(f.name)}` }));
+}
+/* 读取 music/music.json 清单 */
+async function fetchFromManifest(){
+  const res = await fetch(`${MUSIC_CONFIG.dir}/music.json`,{ cache:"no-store" });
+  if(!res.ok) throw new Error("manifest "+res.status);
+  const data = await res.json();
+  const arr = Array.isArray(data) ? data : (data.tracks||[]);
+  if(!arr.length) return null;
+  return arr.map(t => ({
+    title: t.title || parseTrackName(t.src||"未命名").title,
+    artist: t.artist || "",
+    // 清单里的 src 若是裸文件名，则补上 music/ 前缀
+    src: /^(https?:)?\/\//.test(t.src) || t.src.includes("/") ? t.src : `${MUSIC_CONFIG.dir}/${t.src}`
+  }));
+}
 
 (function initPlayer(){
   const player=$("#player"), audio=$("#plAudio");
@@ -1557,13 +1769,20 @@ const playlist = [
         prevBtn=$("#plPrev"), nextBtn=$("#plNext"), seek=$("#plSeek"),
         curEl=$("#plCur"), durEl=$("#plDur"), vol=$("#plVol"), volIcon=$("#plVolIcon"),
         fab=$("#plFab"), collapseBtn=$("#plCollapse");
-  let idx=0, seeking=false;
+  let idx=0, seeking=false, errCount=0;
 
   const fmt=s=>{ s=Math.max(0,Math.floor(s||0)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); };
 
-  // 渲染播放列表
+  // 渲染播放列表（空库时给出友好提示）
   function renderList(){
     listEl.innerHTML="";
+    if(!playlist.length){
+      const li=document.createElement("li");
+      li.className="pl-empty"; li.setAttribute("aria-disabled","true");
+      li.innerHTML=`<span class="idx"><i class="fa-solid fa-compact-disc"></i></span><span class="nm">音乐库为空 · 敬请期待新作品</span>`;
+      listEl.appendChild(li);
+      return;
+    }
     playlist.forEach((t,i)=>{
       const li=document.createElement("li");
       li.setAttribute("role","option");
@@ -1577,6 +1796,10 @@ const playlist = [
   }
   // 载入某首（play=true 则立即播放）
   function load(i,play){
+    if(!playlist.length){                       // 空库：显示占位，不设 src
+      idx=0; titleEl.textContent="音乐库为空"; subEl.textContent="上传作品后自动上架";
+      audio.removeAttribute("src"); renderList(); return;
+    }
     idx=(i+playlist.length)%playlist.length;
     const t=playlist[idx];
     titleEl.textContent=t.title;
@@ -1585,6 +1808,13 @@ const playlist = [
     renderList();
     seek.value=0; seek.style.setProperty("--pct","0%"); curEl.textContent="0:00"; durEl.textContent="0:00";
     if(play){ audio.play().then(()=>{}).catch(()=>{ /* 自动播放被拦截或源不可用：等用户手动点 */ }); }
+  }
+  // 供异步解析后替换整份歌单并刷新界面（不打断正在播放的曲目）
+  function setPlaylist(tracks){
+    playlist = Array.isArray(tracks) ? tracks : [];
+    const wasPlaying = !audio.paused && !!audio.currentTime;
+    if(!wasPlaying){ idx=0; load(0,false); }    // 未在播放：载入第一首（不自动播）
+    else { renderList(); }                        // 正在播放：保持当前曲，只刷新列表
   }
   // 播放/暂停
   function togglePlay(){
@@ -1597,12 +1827,17 @@ const playlist = [
   nextBtn.addEventListener("click",()=>load(idx+1,true));
 
   // 播放状态 → 图标 / 封面旋转 / FAB 均衡器动画
-  audio.addEventListener("play",()=>{ toggleIcon.className="fa-solid fa-pause"; cover.classList.add("spinning"); player.classList.add("playing"); });
+  audio.addEventListener("play",()=>{ errCount=0; toggleIcon.className="fa-solid fa-pause"; cover.classList.add("spinning"); player.classList.add("playing"); });
   audio.addEventListener("pause",()=>{ toggleIcon.className="fa-solid fa-play"; cover.classList.remove("spinning"); player.classList.remove("playing"); });
   // 循环：最后一首播完自动回到第一首
-  audio.addEventListener("ended",()=>load(idx+1,true));
-  // 源不可用 → 跳下一首（防止卡死；仅在有 src 时）
-  audio.addEventListener("error",()=>{ if(audio.src){ subEl.textContent="源不可用，已跳过"; } });
+  audio.addEventListener("ended",()=>{ errCount=0; load(idx+1,true); });
+  // 源不可用 → 自动跳下一首（连续失败超过歌单长度则停止，避免死循环）
+  audio.addEventListener("error",()=>{
+    if(!audio.getAttribute("src")) return;      // 无 src 的空库状态不处理
+    subEl.textContent="源不可用，已跳过";
+    if(++errCount <= playlist.length){ load(idx+1,true); }
+    else { subEl.textContent="暂无可播放的曲目"; errCount=0; }
+  });
 
   // 进度更新
   audio.addEventListener("loadedmetadata",()=>{ durEl.textContent=fmt(audio.duration); });
@@ -1643,7 +1878,13 @@ const playlist = [
   // 展开/收起整个播放面板（FAB ↔ 面板）
   function expand(){ player.classList.add("expanded"); fab.setAttribute("aria-expanded","true"); }
   function collapse(){ player.classList.remove("expanded","open"); fab.setAttribute("aria-expanded","false"); head.setAttribute("aria-expanded","false"); fab.focus(); }
-  fab.addEventListener("click",expand);
+  // 点击右下角悬浮按钮：直接展开面板并开始播放（用户手势内触发，绕过自动播放限制）
+  fab.addEventListener("click",()=>{
+    expand();
+    if(!playlist.length){ showToast("音乐库为空，上传作品后即可播放","music"); return; }
+    if(!audio.getAttribute("src")) load(idx,true);      // 尚未载入源：载入当前曲并播放
+    else if(audio.paused) audio.play().catch(()=>showToast("点击面板里的 ▶ 开始播放","music"));
+  });
   collapseBtn.addEventListener("click",collapse);
   // 点击播放器外部：先收起列表，若列表已收则收起整个面板
   document.addEventListener("click",e=>{
@@ -1654,8 +1895,150 @@ const playlist = [
   // Esc 收起
   addEventListener("keydown",e=>{ if(e.key==="Escape"&&player.classList.contains("expanded")) collapse(); });
 
-  // 初始化：载入第一首（不自动播放，避免浏览器拦截 & 打扰用户）
+  // 初始化：先用兜底列表载入第一首（不自动播放），随后异步解析真实歌单
   load(0,false);
+
+  // 暴露给「音乐作品」入口卡片：展开面板 + 打开列表 + 播放（当前曲或第一首）
+  window.__player = {
+    open(){ expand(); if(!player.classList.contains("open")) toggleList(); },
+    play(){
+      expand();
+      if(!player.classList.contains("open")) toggleList();
+      if(!playlist.length){ showToast("音乐库为空，上传作品后即可播放","music"); return; }
+      if(!audio.getAttribute("src")) load(idx,true);
+      else if(audio.paused) audio.play().catch(()=>showToast("点击播放器里的 ▶ 开始播放","music"));
+    }
+  };
+
+  // 异步解析音乐库：GitHub API → music.json → 内置兜底，取到即替换
+  (async ()=>{
+    subEl.textContent = "正在载入音乐库…";
+    try{
+      let tracks = null;
+      try{ tracks = await fetchFromGitHub(); }catch(e){ /* API 失败/超限，尝试清单 */ }
+      if(!tracks || !tracks.length){
+        try{ tracks = await fetchFromManifest(); }catch(e){ /* 清单缺失，用兜底 */ }
+      }
+      if(tracks && tracks.length){ setPlaylist(tracks); }
+      else { setPlaylist(fallbackPlaylist); }   // 都没有 → 保留内置示例
+    }catch(e){
+      setPlaylist(fallbackPlaylist);
+    }
+  })();
+})();
+
+/* ================= 🎮 游戏库 + 入口卡片交互 ================= */
+/* 与音乐同源：把游戏放进仓库的 games/ 子文件夹（含 index.html），部署后自动列出。
+   加载优先级：GitHub API 列 games/ 子目录 → games/games.json → 空状态。 */
+const GAMES_DIR = "games";
+/* 目录名 → 友好游戏名：连字符/下划线转空格，首字母大写 */
+function prettyGameName(s){
+  return decodeURIComponent(s).replace(/[-_]+/g," ").replace(/\.(html?|)$/i,"").trim()
+    .replace(/\b\w/g,c=>c.toUpperCase());
+}
+/* 通过 GitHub API 列出 games/ 下的子目录(每个=一个游戏，入口 index.html)与单个 .html 文件 */
+async function fetchGamesFromGitHub(){
+  const gh = detectGitHubRepo && detectGitHubRepo();
+  if(!gh) return null;
+  const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${GAMES_DIR}?ref=${MUSIC_CONFIG.branch}`;
+  const res = await fetch(url,{ headers:{ "Accept":"application/vnd.github+json" } });
+  if(!res.ok) throw new Error("GitHub API "+res.status);
+  const items = await res.json();
+  if(!Array.isArray(items)) return null;
+  const games = [];
+  for(const it of items){
+    if(it.type==="dir"){
+      games.push({ title:prettyGameName(it.name), desc:"网页游戏", url:`${GAMES_DIR}/${encodeURIComponent(it.name)}/index.html`, cover:"" });
+    } else if(it.type==="file" && /\.html?$/i.test(it.name) && !/^readme/i.test(it.name)){
+      games.push({ title:prettyGameName(it.name), desc:"网页游戏", url:`${GAMES_DIR}/${encodeURIComponent(it.name)}`, cover:"" });
+    }
+  }
+  return games.sort((a,b)=>a.title.localeCompare(b.title,"zh"));
+}
+/* 读取 games/games.json 清单 */
+async function fetchGamesFromManifest(){
+  const res = await fetch(`${GAMES_DIR}/games.json`,{ cache:"no-store" });
+  if(!res.ok) throw new Error("manifest "+res.status);
+  const data = await res.json();
+  const arr = Array.isArray(data) ? data : (data.games||[]);
+  if(!arr.length) return null;
+  return arr.map(g=>({
+    title: g.title || prettyGameName(g.url||"游戏"),
+    desc:  g.desc || "网页游戏",
+    url:   /^(https?:)?\/\//.test(g.url) ? g.url : `${GAMES_DIR}/${g.url}`,
+    cover: g.cover || ""
+  }));
+}
+
+(function initGames(){
+  const modal=$("#gmModal"), listEl=$("#gmList");
+  if(!modal||!listEl) return;
+  const backdrop=$("#gmBackdrop"), closeBtn=$("#gmClose"), subEl=$("#gmSub");
+  let games=null, loading=false, lastFocus=null;
+
+  function esc(s){ return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+  function renderGames(){
+    listEl.innerHTML="";
+    if(!games || !games.length){
+      const li=document.createElement("li");
+      li.className="gm-empty";
+      li.innerHTML=`<i class="fa-solid fa-ghost"></i>游戏库还是空的～<br>把网页小游戏放进仓库的 <code>games/</code> 文件夹并 push，这里就会自动出现。`;
+      listEl.appendChild(li);
+      return;
+    }
+    games.forEach(g=>{
+      const li=document.createElement("li");
+      const a=document.createElement("a");
+      a.className="gm-item"; a.href=g.url; a.target="_blank"; a.rel="noopener";
+      const cover = g.cover ? `background-image:url('${esc(g.cover)}')` : "";
+      a.innerHTML=`
+        <div class="gm-cover" style="${cover}"><span class="gm-play"><i class="fa-solid fa-circle-play"></i></span></div>
+        <div class="gm-info"><div class="gm-name">${esc(g.title)}</div><div class="gm-desc">${esc(g.desc)}</div></div>`;
+      li.appendChild(a); listEl.appendChild(li);
+    });
+  }
+
+  async function ensureLoaded(){
+    if(games || loading) return;
+    loading=true;
+    subEl.textContent="正在载入游戏库…";
+    renderGames();                                   // 先渲染占位
+    try{
+      let list=null;
+      try{ list=await fetchGamesFromGitHub(); }catch(e){}
+      if(!list || !list.length){ try{ list=await fetchGamesFromManifest(); }catch(e){} }
+      games = list || [];
+    }catch(e){ games=[]; }
+    loading=false;
+    subEl.textContent = games.length ? "点开即玩 · 作品持续加入中" : "作品持续加入中";
+    renderGames();
+  }
+
+  function open(){
+    lastFocus=document.activeElement;
+    modal.classList.add("open"); modal.setAttribute("aria-hidden","false");
+    document.body.style.overflow="hidden";
+    closeBtn.focus();
+    ensureLoaded();
+  }
+  function close(){
+    modal.classList.remove("open"); modal.setAttribute("aria-hidden","true");
+    document.body.style.overflow="";
+    if(lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  backdrop.addEventListener("click",close);
+  closeBtn.addEventListener("click",close);
+  addEventListener("keydown",e=>{ if(e.key==="Escape"&&modal.classList.contains("open")) close(); });
+
+  // 入口卡片点击：音乐 → 展开播放器并播放；游戏 → 打开选择弹窗
+  document.addEventListener("click",e=>{
+    const card=e.target.closest("[data-gal]");
+    if(!card) return;
+    const action=card.getAttribute("data-gal");
+    if(action==="music"){ window.__player?.play(); }
+    else if(action==="game"){ open(); }
+  });
 })();
 
 /* ================= 高级感增强模块（参考 liuhao.online：点+圈光标 / 磁性按钮 / 卡片光斑 / 装饰环视差） =================
