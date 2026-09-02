@@ -1872,11 +1872,11 @@ const MUSIC_CONFIG = {
   branch:"main",        // 分支名（默认 main，若你的默认分支是 master 请改这里）
   dir:   "music"        // 音频所在文件夹
 };
-/* 内置示例列表（第 3 兜底）；正式使用时可保留或清空 */
+/* 内置示例列表（第 3 兜底）：指向仓库 music/ 里真实存在的文件，
+   这样即使 GitHub API 限流、music.json 缺失，也仍能正常播放（含中文/全角文件名，需编码）。 */
 const fallbackPlaylist = [
-  { title:"星轨 Starlight",   artist:"AI 生成 · 氛围", src:"music/starlight.mp3" },
-  { title:"夜航 Night Drive", artist:"AI 生成 · 电子", src:"music/night-drive.mp3" },
-  { title:"归零 Reset",        artist:"AI 生成 · 国风", src:"music/reset.mp3" }
+  { title:"深空回响",        artist:"AI 生成", src:"music/"+encodeURIComponent("《深空回响》.mp3") },
+  { title:"Stellar Triumph", artist:"AI 生成", src:"music/"+encodeURIComponent("《Stellar Triumph》.mp3") }
 ];
 
 /* playlist 先给兜底，异步解析成功后由 setPlaylist() 替换并重渲染 */
@@ -1914,7 +1914,9 @@ async function fetchFromGitHub(){
   return files
     .filter(f => f.type==="file" && AUDIO_EXT.test(f.name))
     .sort((a,b)=>a.name.localeCompare(b.name,"zh"))
-    .map(f => ({ ...parseTrackName(f.name), src: f.download_url || `${MUSIC_CONFIG.dir}/${encodeURIComponent(f.name)}` }));
+    // 优先用同源相对路径（music/<编码文件名>）：与页面同域，MIME/跨域最稳；
+    // 仅在拿不到时才退回 GitHub 的 download_url（raw.githubusercontent.com，跨域，个别环境不便播放）。
+    .map(f => ({ ...parseTrackName(f.name), src: `${MUSIC_CONFIG.dir}/${encodeURIComponent(f.name)}` || f.download_url }));
 }
 /* 读取 music/music.json 清单 */
 async function fetchFromManifest(){
@@ -1926,8 +1928,10 @@ async function fetchFromManifest(){
   return arr.map(t => ({
     title: t.title || parseTrackName(t.src||"未命名").title,
     artist: t.artist || "",
-    // 清单里的 src 若是裸文件名，则补上 music/ 前缀
-    src: /^(https?:)?\/\//.test(t.src) || t.src.includes("/") ? t.src : `${MUSIC_CONFIG.dir}/${t.src}`
+    // 清单里的 src 若已是 URL 或含路径，则原样用；若是裸文件名，补 music/ 前缀并编码（兼容中文/全角文件名）
+    src: (/^(https?:)?\/\//.test(t.src) || t.src.includes("/"))
+           ? t.src
+           : `${MUSIC_CONFIG.dir}/${encodeURIComponent(t.src)}`
   }));
 }
 
@@ -2001,12 +2005,24 @@ async function fetchFromManifest(){
   audio.addEventListener("pause",()=>{ toggleIcon.className="fa-solid fa-play"; cover.classList.remove("spinning"); player.classList.remove("playing"); });
   // 循环：最后一首播完自动回到第一首
   audio.addEventListener("ended",()=>{ errCount=0; load(idx+1,true); });
-  // 源不可用 → 自动跳下一首（连续失败超过歌单长度则停止，避免死循环）
+  // 源不可用 → 谨慎处理，避免“不停上下切歌”：
+  //  · 仅当确有 src、且不是用户主动暂停时才考虑跳过；
+  //  · 用 skipping 闸门防止 load() 设新 src 又触发 error 造成的级联自跳；
+  //  · 连续失败超过歌单长度则彻底停下，提示用户，而不是无限轮换。
+  let skipping=false;
   audio.addEventListener("error",()=>{
     if(!audio.getAttribute("src")) return;      // 无 src 的空库状态不处理
+    if(skipping) return;                         // 正在切歌导致的 error：忽略，防级联
+    if(playlist.length<=1){                      // 只有一首（或空）：不轮换，直接提示
+      subEl.textContent="该曲目无法播放，请检查音乐源"; return;
+    }
+    if(++errCount > playlist.length){            // 整个歌单都失败：停下，别再转
+      subEl.textContent="暂无可播放的曲目"; errCount=0; return;
+    }
     subEl.textContent="源不可用，已跳过";
-    if(++errCount <= playlist.length){ load(idx+1,true); }
-    else { subEl.textContent="暂无可播放的曲目"; errCount=0; }
+    skipping=true;
+    load(idx+1,true);
+    setTimeout(()=>{ skipping=false; },400);     // 给新 src 一点加载时间再解除闸门
   });
 
   // 进度更新
