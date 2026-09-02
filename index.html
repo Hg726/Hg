@@ -261,11 +261,17 @@ a{text-decoration:none;color:inherit}
 .like-btn:hover .like-ic{color:#f472b6}
 .like-btn .like-count{min-width:20px;padding:0 7px;height:19px;display:inline-grid;place-items:center;
   font-size:11.5px;border-radius:999px;background:rgba(148,163,184,.16);color:#cbd5e1;transition:.25s}
-/* 已点赞态：心形填充为粉红并保持高亮 */
+/* 已点赞态：心形填充为粉红并保持高亮（点赞后锁定，不可取消） */
 .like-btn.liked{color:#f9a8d4;border-color:rgba(244,114,182,.55);background:rgba(244,114,182,.10)}
 .like-btn.liked .like-ic{color:#f472b6}
 .like-btn.liked .like-ic svg{fill:#f472b6;stroke:#f472b6}
 .like-btn.liked .like-count{background:rgba(244,114,182,.22);color:#fbcfe8}
+/* 已点赞后按钮锁定：光标改为默认、去掉悬浮上浮，明确“无法取消” */
+.like-btn.liked{cursor:default}
+.like-btn.liked:hover{transform:none;color:#f9a8d4;
+  box-shadow:0 0 0 1px rgba(244,114,182,.28)}
+/* 计数请求进行中：轻微降透明，避免重复点击 */
+.like-btn.is-busy{opacity:.7;pointer-events:none}
 .like-btn.pop .like-ic{animation:likePop .45s ease}
 @keyframes likePop{0%{transform:scale(1)}35%{transform:scale(1.4)}60%{transform:scale(.9)}100%{transform:scale(1)}}
 
@@ -540,6 +546,27 @@ a{text-decoration:none;color:inherit}
   .svc-card,.svc-card-img{transition:none}.svc-caret{animation:none}
 }
 
+/* ======================= 项目经历栏：技能站同款（左极简字 · 右等大图卡） =======================
+   复用 SERVICES/SKILLS 的 .svc-grid / .svc-left / .svc-cards / .svc-card 布局，
+   下面只补充项目卡内容层（.proj-*）的排版：日期条 / 要点 / 标签 / 证书图 / 链接。 */
+.proj-card .proj-meta{display:flex;align-items:center;gap:7px;color:#22d3ee;font-size:12px;font-weight:700;
+  letter-spacing:.02em;margin-bottom:10px}
+.proj-card .svc-card-title{margin:0 0 14px}
+.proj-card .proj-points{display:flex;flex-direction:column;gap:9px;margin:0}
+.proj-card .proj-points li{display:flex;gap:8px;color:#cbd5e1;font-size:13px;line-height:1.7}
+.proj-card .proj-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.proj-card .proj-chips-wrap{margin-top:14px}
+.proj-card .proj-link{display:inline-flex;align-items:center;gap:6px;margin-top:16px;padding:0 14px;height:36px;
+  border-radius:10px;font-size:12px;font-weight:700;color:#67e8f9;border:1px solid rgba(34,211,238,.28);
+  background:rgba(34,211,238,.08);transition:background .25s,border-color .25s}
+.proj-card .proj-link:hover{background:rgba(34,211,238,.16);border-color:rgba(34,211,238,.55)}
+/* 证书集卡：证书图填充卡内容区，点击放大 */
+.proj-card .proj-cert{margin:0;overflow:hidden;border-radius:16px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(15,23,42,.5)}
+.proj-card .proj-cert img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.proj-card .proj-cert figcaption{padding:8px 12px;font-size:11px;color:#94a3b8;text-align:center}
+.light .proj-card .proj-points li{color:#334155}
+
 /* ======================= 图片背景卡（把普通卡升级为 SERVICES 同款：图底 + 暗色遮罩 + 悬浮交互） =======================
    用法：给 .glass 卡追加 .glass-photo，并注入 .gp-img / .gp-shade / .gp-glow 三层（在内容之下）。
    内容仍在最上层，暗色遮罩保证正文可读；hover 时图片放大提亮、青描边与底部辉光，观感与技能站一致。 */
@@ -576,9 +603,6 @@ a{text-decoration:none;color:inherit}
   width:100%;appearance:none;-webkit-tap-highlight-color:transparent}
 .gal-eyebrow{position:absolute;top:20px;left:24px;z-index:3;font-family:"Plus Jakarta Sans",sans-serif;
   font-size:12px;font-weight:800;letter-spacing:.34em;color:#67e8f9;opacity:.9}
-.gal-ic{position:absolute;top:16px;right:22px;z-index:3;display:grid;place-items:center;width:52px;height:52px;
-  border-radius:16px;color:#e0f2fe;background:rgba(34,211,238,.14);border:1px solid rgba(103,232,249,.35);
-  transition:transform .4s cubic-bezier(.2,.8,.2,1),background .3s,color .3s}
 .gal-body{position:relative;z-index:3;display:flex;flex-direction:column}
 .gal-title{font-size:clamp(21px,3.2vw,26px);font-weight:800;color:#fff;letter-spacing:.01em}
 .gal-desc{margin-top:8px;font-size:13.5px;line-height:1.8;color:#cbd5e1;max-width:38ch}
@@ -588,18 +612,27 @@ a{text-decoration:none;color:inherit}
 .gal-go{margin-top:16px;display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;color:#67e8f9;
   transition:gap .3s ease,color .3s ease}
 .gal-go svg{transition:transform .3s ease}
-/* 悬浮：图标放大转色、按钮箭头右移（上浮/图片放大/辉光由 .glass-photo + .lift 提供） */
-.gal-card:hover .gal-ic{transform:scale(1.08) rotate(-4deg);background:rgba(34,211,238,.22);color:#fff}
+/* 悬浮：按钮箭头右移（上浮/图片放大/辉光由 .glass-photo + .lift 提供） */
 .gal-card:hover .gal-go{gap:12px;color:#a5f3fc}
 .gal-card:hover .gal-go svg{transform:translateX(3px)}
 .gal-card:focus-visible{outline:2px solid rgba(34,211,238,.7);outline-offset:3px}
 .light .gal-title{color:#0b1220}.light .gal-desc{color:#334155}
 @media(max-width:480px){
   .gal-card{min-height:240px;padding:22px 18px;border-radius:22px}
-  .gal-ic{width:46px;height:46px}
   .gal-eyebrow{letter-spacing:.24em}
 }
-@media(prefers-reduced-motion:reduce){.gal-ic,.gal-go,.gal-go svg{transition:none}}
+@media(prefers-reduced-motion:reduce){.gal-go,.gal-go svg{transition:none}}
+
+/* 紧凑版入口卡：并入亮点成果 bento 网格、按原比例缩小填补右侧空格（与指标卡等高、内容纵向铺满） */
+.gal-card.gal-compact{min-height:0;justify-content:flex-end;padding:20px 20px;border-radius:22px}
+.gal-compact .gal-eyebrow{top:16px;left:18px;font-size:11px;letter-spacing:.28em}
+.gal-compact .gal-title{font-size:clamp(18px,2.4vw,21px)}
+.gal-compact .gal-desc{margin-top:6px;font-size:12.5px;line-height:1.7;max-width:32ch;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gal-compact .gal-tags{margin-top:11px;gap:6px}
+.gal-compact .gal-tags i{font-size:10.5px;padding:3px 9px}
+.gal-compact .gal-go{margin-top:12px;font-size:12.5px}
+@media(max-width:480px){.gal-card.gal-compact{min-height:210px}}
 
 /* ======================= 游戏选择弹窗（点击游戏入口卡片弹出） ======================= */
 .gm-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -789,7 +822,7 @@ a{text-decoration:none;color:inherit}
       <a href="#services"   class="nav-btn"><span class="nav-bg"></span><span class="nav-face">技能</span></a>
       <a href="#experience" class="nav-btn"><span class="nav-bg"></span><span class="nav-face">经历</span></a>
       <a href="#projects"   class="nav-btn"><span class="nav-bg"></span><span class="nav-face">项目</span></a>
-      <a href="#gallery"    class="nav-btn"><span class="nav-bg"></span><span class="nav-face">作品</span></a>
+      <a href="#highlights" class="nav-btn"><span class="nav-bg"></span><span class="nav-face">亮点</span></a>
     </nav>
     <div class="flex items-center gap-2">
       <button id="printBtn" title="打印 / 导出 PDF"
@@ -809,7 +842,6 @@ a{text-decoration:none;color:inherit}
     <a href="#skills"     class="mnav-pill">技能矩阵</a>
     <a href="#projects"   class="mnav-pill">项目</a>
     <a href="#highlights" class="mnav-pill">亮点</a>
-    <a href="#gallery"    class="mnav-pill">作品</a>
   </nav>
 </header>
 
@@ -818,7 +850,13 @@ a{text-decoration:none;color:inherit}
 
 <footer class="relative z-10 border-t border-white/5 py-8 text-center text-slate-500 text-xs">
   <div class="flex justify-center mb-5">
-    <button id="likeBtn" class="like-btn" aria-label="点赞" aria-pressed="false">
+    <!-- 点赞按钮：全局计数存于 GitHub Gist（匿名可读）。
+         · data-gist：存放计数的公开 Gist ID（形如 abcdef123...）。文件名默认 like-count.json，内容 {"count": N}。
+         · data-like-api：可选的写入接口（无密钥的静态页无法直接安全写 Gist，需一个持有 token 的极简 serverless 代理，
+           收到 POST 后对该 Gist 做 +1）。留空则仅读取展示 + 本地永久点赞兜底。
+         两者都留空时：退化为“本机永久点赞 + 本地累计”。 -->
+    <button id="likeBtn" class="like-btn" aria-label="点赞（点赞后不可取消）" aria-pressed="false"
+            data-gist="" data-gist-file="like-count.json" data-like-api="">
       <span class="like-ic" aria-hidden="true"></span>
       <span class="like-txt">点赞</span>
       <span class="like-count" id="likeCount">0</span>
@@ -838,7 +876,7 @@ a{text-decoration:none;color:inherit}
 <!-- ============ 音乐播放器（右下角；小屏底部居中） ============ -->
 <section id="player" aria-label="音乐播放器">
   <!-- 收起态：悬浮式圆形音乐按钮（经典音乐图标） -->
-  <button id="plFab" class="pl-fab" aria-label="播放音乐" aria-expanded="false" title="点击播放音乐">
+  <button id="plFab" class="pl-fab" aria-label="播放 / 切换音乐" aria-expanded="false" title="点击播放 / 切换下一首">
     <span class="pl-fab-ring" aria-hidden="true"></span>
     <i class="fa-solid fa-music pl-fab-ic" aria-hidden="true"></i>
     <span class="pl-fab-eq" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -1039,7 +1077,7 @@ const cardBg = {
   stack:    T2I+"abstract%20technology%20stack%20layers%2C%20floating%20glowing%20code%20blocks%20and%20chips%20on%20dark%20background%2C%20cyan%20indigo%20gradient%20light%2C%20cinematic%2C%20high%20detail%2C%208k&image_size=portrait_16_9",
   highlight:T2I+"glowing%20data%20growth%20chart%20and%20metrics%20on%20dark%20background%2C%20upward%20trend%2C%20cyan%20emerald%20neon%20light%2C%20cinematic%20premium%20tech%20mood%2C%20high%20detail%2C%208k&image_size=square",
   music:    T2I+"glowing%20music%20studio%20with%20neon%20sound%20waves%20and%20equalizer%20bars%2C%20vinyl%20record%20and%20synthesizer%2C%20cyan%20purple%20light%2C%20dark%20cinematic%20mood%2C%20high%20detail%2C%208k&image_size=landscape_4_3",
-  game:     T2I+"neon%20arcade%20gaming%20setup%20in%20the%20dark%2C%20glowing%20game%20controller%20and%20pixel%20light%20trails%2C%20cyberpunk%20cyan%20magenta%20light%2C%20cinematic%20immersive%20mood%2C%20high%20detail%2C%208k&image_size=landscape_4_3"
+  game:     T2I+"neon%20arcade%20gaming%20setup%20in%20the%20dark%2C%20glowing%20retro%20game%20controller%20and%20pixel%20light%20trails%2C%20cyberpunk%20cyan%20magenta%20light%2C%20cinematic%20immersive%20mood%2C%20high%20detail%2C%208k&image_size=landscape_4_3"
 };
 /* 技能矩阵四大类各自的主题背景图（技能站同款卡片用） */
 const skillBg = [
@@ -1096,47 +1134,125 @@ function render(){
   /* ---- 技能矩阵：SKILLS（技能站同款左文右图卡片形式） ---- */
   app.appendChild(skillsSection());
 
-  /* ---- 项目经历（融合：项目 + 亮点成果，共用一个大标题以减少留白） ---- */
-  app.appendChild(sectionTitle("projects","folder-git-2","项目经历","核心项目 · 技术栈 · 可量化成绩"));
+  /* ---- 项目经历：参考 skills 栏的两栏布局（较长项目→左侧竖向大卡；标题 Projects→右侧） ---- */
+  app.appendChild(projectsSection());
 
-  /* 项目：跨 2 列大卡 + 技能聚合 1 列 */
-  const pg = el("div","bento");
-  resume.projects.forEach((p,i)=>pg.appendChild(projectCard(p,i===0)));
-  pg.appendChild(skillPillCard());          // 技能聚合胶囊卡（1 列）
-  app.appendChild(pg);
-
-  /* 亮点指标看板：用轻量小标题分隔（并入项目经历大区，不再单独占一段大标题的留白） */
-  app.appendChild(subHead("highlights","zap","亮点成果","可量化的关键成绩"));
+  /* ---- 亮点指标看板 + 作品与娱乐入口（音乐/游戏 3D 卡片并入本栏，填补右侧空格） ---- */
+  app.appendChild(sectionTitle("highlights","zap","亮点成果","可量化的关键成绩 · 点开听我的音乐、玩我做的游戏"));
   const hg = el("div","bento");
   resume.highlights.forEach(h=>hg.appendChild(metricCard(h)));
-  app.appendChild(hg);
-
-  /* ---- 作品与娱乐：两个 3D 卡片入口（音乐作品 / 游戏入口） ---- */
-  app.appendChild(sectionTitle("gallery","gamepad-2","作品与娱乐","点开听我的音乐 · 玩我做的游戏"));
-  const gg = el("div","gal-grid");
-  gg.appendChild(galleryEntry({
+  // 音乐 / 游戏两个入口卡：并入同一 bento 网格，按原比例缩小后填入 50% 卡右侧的两个空格
+  hg.appendChild(galleryEntry({
     key:"music", icon:"music", eyebrow:"MUSIC", title:"音乐作品展示",
     desc:"AI 生成 · 多风格原创，点开即听。作品持续更新中。",
-    tags:["AI 生成","氛围","电子","国风"], bg:cardBg.music, action:"music"
+    tags:["AI 生成","氛围","电子","国风"], bg:cardBg.music, action:"music", compact:true
   }));
-  gg.appendChild(galleryEntry({
+  hg.appendChild(galleryEntry({
     key:"game", icon:"gamepad-2", eyebrow:"PLAY", title:"游戏入口展示",
     desc:"我做的网页小游戏，点开选一个直接开玩。作品持续加入中。",
-    tags:["网页游戏","即点即玩","持续更新"], bg:cardBg.game, action:"game"
+    tags:["网页游戏","即点即玩","持续更新"], bg:cardBg.game, action:"game", compact:true
   }));
-  app.appendChild(gg);
+  app.appendChild(hg);
+}
+
+/* ================= PROJECTS 项目经历（技能站同款：左极简字 · 右图卡片） =================
+   与 skillsSection / servicesSection 一致：左侧极简标题栏（PROJECTS），右侧一组等大图卡。
+   卡片统一用 .svc-card（同款图底 + 暗遮罩 + 悬浮），内容层用 .proj-* 承载项目要点/证书图/技术栈，
+   保证左右两侧卡片同宽同高、排列整齐。 */
+function projectsSection(){
+  const wrap = el("section","svc reveal mt-16 mb-4");
+  wrap.id = "projects";
+
+  // 单个项目图卡（要点 + 标签 + 可选链接）
+  const projCard = (p,i,bg)=>`
+    <article class="svc-card proj-card" tabindex="0">
+      <div class="svc-card-img" style="background-image:url('${bg}')"></div>
+      <div class="svc-card-shade"></div>
+      <span class="svc-card-no">0${i+1}</span>
+      <div class="svc-card-body">
+        <div class="proj-meta">${ic("folder-open","w-4 h-4")}<span>${p.date}</span></div>
+        <h3 class="svc-card-title">${p.name}</h3>
+        <ul class="proj-points">
+          ${p.points.map(x=>`<li>${ic("chevron-right","w-4 h-4 text-cyan-400 shrink-0 mt-0.5")}<span>${x}</span></li>`).join("")}
+        </ul>
+        <div class="proj-chips">${p.stack.map(t=>`<span class="chip">${t}</span>`).join("")}</div>
+        ${p.link?`<a href="${p.link}" target="_blank" rel="noopener" class="proj-link">${ic("external-link","w-3.5 h-3.5")}${p.linkText||"查看"}</a>`:""}
+      </div>
+      <span class="svc-card-glow" aria-hidden="true"></span>
+    </article>`;
+
+  // 证书集图卡（证书图 · 点击放大）
+  const ci = resume.certImage||{};
+  const certCardHTML = `
+    <article class="svc-card proj-card" tabindex="0">
+      <div class="svc-card-img" style="background-image:url('${cardBg.cert}')"></div>
+      <div class="svc-card-shade"></div>
+      <span class="svc-card-no">0${resume.projects.length+1}</span>
+      <div class="svc-card-body">
+        <div class="proj-meta">${ic("award","w-4 h-4")}<span>CERTIFICATES · 证书集</span></div>
+        <figure data-full="${ci.src}" data-cap="${ci.cap}" class="proj-cert cursor-zoom-in">
+          <img src="${ci.src}" alt="${ci.cap}" loading="lazy" onerror="this.closest('figure').style.display='none'">
+          <figcaption>${ci.cap} · 点击放大</figcaption>
+        </figure>
+      </div>
+      <span class="svc-card-glow" aria-hidden="true"></span>
+    </article>`;
+
+  // 技术栈聚合图卡
+  const stackCardHTML = `
+    <article class="svc-card proj-card" tabindex="0">
+      <div class="svc-card-img" style="background-image:url('${cardBg.stack}')"></div>
+      <div class="svc-card-shade"></div>
+      <span class="svc-card-no">0${resume.projects.length+2}</span>
+      <div class="svc-card-body">
+        <div class="proj-meta">${ic("layers","w-4 h-4")}<span>TECH STACK</span></div>
+        <h3 class="svc-card-title">技术栈聚合</h3>
+        <div class="proj-chips proj-chips-wrap">${resume.keywords.map(k=>`<span class="chip">${k}</span>`).join("")}</div>
+      </div>
+      <span class="svc-card-glow" aria-hidden="true"></span>
+    </article>`;
+
+  // 卡片顺序：项目1 → 项目2 → 证书集 → 技术栈聚合（两列等宽自动铺排）
+  const cards =
+    resume.projects.map((p,i)=>projCard(p,i,i===0?cardBg.project:(skillBg[1]||cardBg.project))).join("")
+    + certCardHTML + stackCardHTML;
+
+  wrap.innerHTML = `
+    <div class="svc-grid">
+      <!-- 左侧：极简标题栏（PROJECTS，与 SKILLS 同款） -->
+      <div class="svc-left">
+        <div class="svc-index">06</div>
+        <h2 class="svc-heading">PROJECTS</h2>
+        <div class="svc-vlabel">CORE · 项目经历</div>
+        <p class="svc-sub">— 核心项目与技术栈，<br>把想法一步步落地：<span class="svc-caret"></span></p>
+        <div class="svc-nums">
+          ${["01","02","03","04"].map((n,i)=>`<span class="${i===0?'on':''}">${n}</span>`).join("")}
+        </div>
+      </div>
+      <!-- 右侧：项目图卡（等大整齐铺排） -->
+      <div class="svc-cards">${cards}</div>
+    </div>`;
+  return wrap;
+}
+/* 选内容最长的项目做左侧大卡：按要点字数 + 标签数粗略估算 */
+function pickLongestProject(){
+  let best=0, bestLen=-1;
+  resume.projects.forEach((p,i)=>{
+    const len = (p.points||[]).join("").length + (p.stack||[]).length*6;
+    if(len>bestLen){ bestLen=len; best=i; }
+  });
+  return best;
 }
 
 /* 作品与娱乐 · 单个 3D 入口卡（图底 + 悬浮上浮 + 磁性 tilt，配色沿用其他卡片） */
 function galleryEntry(o){
-  const c = el("button","gal-card glass-photo lift");
+  const c = el("button","gal-card glass-photo lift"+(o.compact?" gal-compact":""));
   c.type = "button";
   c.setAttribute("data-tilt","");
   c.setAttribute("data-gal", o.action);
   c.setAttribute("aria-label", o.title);
   c.innerHTML = `
     <span class="gal-eyebrow">${o.eyebrow}</span>
-    <span class="gal-ic">${ic(o.icon,"w-7 h-7")}</span>
     <span class="gal-body">
       <span class="gal-title">${o.title}</span>
       <span class="gal-desc">${o.desc}</span>
@@ -1171,20 +1287,6 @@ function sectionTitle(id,icon,title,sub){
       <div class="text-[11px] tracking-[.18em] text-cyan-400 font-bold uppercase">${id}</div>
       <h2 class="text-2xl sm:text-3xl font-extrabold text-white leading-tight">${title}</h2>
       <p class="text-slate-500 text-sm">${sub}</p>
-    </div>`;
-  return s;
-}
-
-/* 轻量小标题：同大区内的子分栏（比 sectionTitle 更紧凑，减少段间留白）。仍带 id 供导航锚点使用 */
-function subHead(id,icon,title,sub){
-  const s = el("div","reveal mt-9 mb-4 flex items-center gap-2.5");
-  s.id=id;
-  s.innerHTML = `
-    <span class="grid place-items-center w-8 h-8 rounded-xl text-cyan-300 border border-cyan-400/20"
-          style="background:rgba(34,211,238,.08)">${ic(icon,"w-4 h-4")}</span>
-    <div class="flex items-baseline gap-2.5 flex-wrap">
-      <h3 class="text-lg sm:text-xl font-extrabold text-white leading-tight">${title}</h3>
-      <p class="text-slate-500 text-[13px]">${sub}</p>
     </div>`;
   return s;
 }
@@ -1265,21 +1367,22 @@ function metricCard(h){
   return withPhoto(c,cardBg.highlight);
 }
 
-/* 项目卡（首个跨 2 列 + 证书图；其余 1 列） */
-function projectCard(p,big){
-  const c = el("div",CARD+(big?" col-2":""));
+/* 项目卡（纯文字：日期/标题/要点/标签/按钮）。opts.embedImg=true 时才在卡内嵌证书图（已弃用，证书改为独立卡） */
+function projectCard(p,big,opts){
+  opts = opts||{};
+  const c = el("div",CARD);
   c.setAttribute("data-tilt","");
   const link = p.link?`<a href="${p.link}" target="_blank" rel="noopener" class="btn-glow inline-flex items-center gap-1.5 mt-4 px-4 h-9 rounded-lg text-xs font-bold text-cyan-300 border border-cyan-400/25" style="background:rgba(34,211,238,.08)">${ic("external-link","w-3.5 h-3.5")}${p.linkText||"查看"}</a>`:"";
-  const img = big&&resume.certImage?.src?`
-    <div class="shrink-0 w-full sm:w-52">
+  const img = opts.embedImg&&resume.certImage?.src?`
+    <div class="mt-6 w-full">
       <figure data-full="${resume.certImage.src}" data-cap="${resume.certImage.cap}" class="cursor-zoom-in overflow-hidden rounded-2xl border border-white/10 bg-slate-800/50 lift">
         <img src="${resume.certImage.src}" alt="${resume.certImage.cap}" loading="lazy" class="w-full aspect-[4/3] object-cover" onerror="this.closest('figure').style.display='none'">
         <figcaption class="px-3 py-2 text-[11px] text-slate-400 text-center">${resume.certImage.cap} · 点击放大</figcaption>
       </figure>
     </div>`:"";
   c.innerHTML = `
-    <div class="flex flex-col sm:flex-row gap-5">
-      <div class="min-w-0 flex-1">
+    <div class="flex flex-col h-full">
+      <div class="min-w-0">
         <div class="flex items-center gap-2 text-cyan-400">${ic("folder-open","w-4.5 h-4.5")}<span class="text-xs font-bold">${p.date}</span></div>
         <h3 class="mt-1 text-lg font-extrabold text-white">${p.name}</h3>
         <ul class="mt-3 space-y-2">
@@ -1288,9 +1391,24 @@ function projectCard(p,big){
         <div class="mt-4 flex flex-wrap gap-2">${p.stack.map(t=>`<span class="chip">${t}</span>`).join("")}</div>
         ${link}
       </div>
-      ${img}
+      ${img ? `<div class="mt-auto">${img}</div>` : ""}
     </div>`;
   return withPhoto(c,cardBg.project);
+}
+
+/* 证书集独立卡（放左列文字卡下方）：标题 + 证书图（点击放大）。
+   ⚠️ 命名从 certCard 改为 certGalleryCard，避免与下方“获奖与证书”列表卡（certCard）重名被覆盖。 */
+function certGalleryCard(){
+  const c = el("div",CARD);
+  c.setAttribute("data-tilt","");
+  const ci = resume.certImage||{};
+  c.innerHTML = `
+    <div class="flex items-center gap-2 text-cyan-400">${ic("award","w-4.5 h-4.5")}<span class="text-xs font-bold tracking-wider">CERTIFICATES · 证书集</span></div>
+    <figure data-full="${ci.src}" data-cap="${ci.cap}" class="cursor-zoom-in overflow-hidden rounded-2xl border border-white/10 bg-slate-800/50 lift mt-3">
+      <img src="${ci.src}" alt="${ci.cap}" loading="lazy" class="w-full aspect-[4/3] object-cover" onerror="this.closest('figure').style.display='none'">
+      <figcaption class="px-3 py-2 text-[11px] text-slate-400 text-center">${ci.cap} · 点击放大</figcaption>
+    </figure>`;
+  return withPhoto(c,cardBg.cert||cardBg.project);
 }
 
 /* 技能聚合胶囊卡（1 列） */
@@ -1605,29 +1723,81 @@ document.querySelectorAll(".copy-btn").forEach(btn=>{
 });
 $("#helloBtn")?.addEventListener("click",e=>{const r=e.currentTarget.getBoundingClientRect();confettiBurst(r.left+r.width/2,r.bottom);showToast("你好呀！随时欢迎联系我 👋","hand");});
 
-/* ---- 页脚点赞：本地计数持久化（localStorage），便于日后接后端 ---- */
+/* ---- 页脚点赞：全局计数（GitHub Gist 匿名可读）+ 点赞后永久锁定（不可取消） ----
+   记录“别人的点赞”：真实计数存放在 GitHub Gist 里，任何访客匿名 GET 即可读取到最新总数，
+   因此不同设备/不同人都能看到彼此累计的赞。写入（+1）走 data-like-api 配置的无密钥代理；
+   若未配置代理或写入失败，则本地乐观 +1 兜底并永久记住“已点赞”。
+   点赞后：本地写入永久标记，按钮锁定，无法再次点击取消。 */
 (function initLike(){
   const btn=$("#likeBtn"); if(!btn) return;
-  const countEl=$("#likeCount"), icEl=btn.querySelector(".like-ic");
-  const KEY_COUNT="gzx_like_count", KEY_LIKED="gzx_liked";
+  const countEl=$("#likeCount"), icEl=btn.querySelector(".like-ic"), txtEl=btn.querySelector(".like-txt");
+  const KEY_LIKED="gzx_liked", KEY_LOCAL="gzx_like_local"; // 永久点赞标记 + 本机兜底累计
+  const gistId=(btn.dataset.gist||"").trim();
+  const gistFile=(btn.dataset.gistFile||"like-count.json").trim();
+  const likeApi=(btn.dataset.likeApi||"").trim();
   const heart='<svg viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
   if(icEl) icEl.innerHTML=heart;
-  let count=parseInt(localStorage.getItem(KEY_COUNT)||"0",10); if(isNaN(count)||count<0)count=0;
+
+  // liked 一旦为真即永久（localStorage），不提供取消入口
   let liked=localStorage.getItem(KEY_LIKED)==="1";
-  const render=()=>{countEl.textContent=count;btn.classList.toggle("liked",liked);btn.setAttribute("aria-pressed",liked?"true":"false");};
+  let count=parseInt(localStorage.getItem(KEY_LOCAL)||"0",10); if(isNaN(count)||count<0)count=0;
+  let busy=false;
+
+  const render=()=>{
+    countEl.textContent=count;
+    btn.classList.toggle("liked",liked);
+    btn.setAttribute("aria-pressed",liked?"true":"false");
+    if(txtEl) txtEl.textContent=liked?"已点赞":"点赞";
+    btn.setAttribute("aria-label",liked?"已点赞（不可取消）":"点赞（点赞后不可取消）");
+  };
   render();
-  btn.addEventListener("click",e=>{
-    liked=!liked;
-    count=Math.max(0,count+(liked?1:-1));
-    localStorage.setItem(KEY_COUNT,String(count));
-    localStorage.setItem(KEY_LIKED,liked?"1":"0");
+
+  // 从 Gist 拉取全局真实计数（匿名可读，无需 token）
+  async function fetchGlobal(){
+    if(!gistId) return;
+    try{
+      const r=await fetch(`https://api.github.com/gists/${gistId}`,{headers:{Accept:"application/vnd.github+json"}});
+      if(!r.ok) return;
+      const j=await r.json();
+      const raw=j?.files?.[gistFile]?.content;
+      if(raw==null) return;
+      const n=parseInt(JSON.parse(raw).count,10);
+      if(!isNaN(n)&&n>=0){ count=n; localStorage.setItem(KEY_LOCAL,String(count)); render(); }
+    }catch(_){/* 网络/解析失败：保留本地展示 */}
+  }
+  fetchGlobal();
+
+  // 向写入代理提交 +1（代理持有 token，对 Gist 计数自增）；返回最新计数或 null
+  async function pushLike(){
+    if(!likeApi) return null;
+    try{
+      const r=await fetch(likeApi,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"like",gist:gistId,file:gistFile})});
+      if(!r.ok) return null;
+      const j=await r.json().catch(()=>null);
+      const n=parseInt(j?.count,10);
+      return isNaN(n)?null:n;
+    }catch(_){ return null; }
+  }
+
+  btn.addEventListener("click",async e=>{
+    if(liked||busy) return;            // 已点赞则锁定，不再响应（无法取消）
+    busy=true; btn.classList.add("is-busy");
+
+    // 立即置为永久“已点赞”，乐观 +1（无论后端是否成功都不回退，保证“点了就记住”）
+    liked=true; localStorage.setItem(KEY_LIKED,"1");
+    count=count+1; localStorage.setItem(KEY_LOCAL,String(count));
     render();
-    if(liked){
-      btn.classList.remove("pop");void btn.offsetWidth;btn.classList.add("pop");
-      confettiBurst(e.clientX,e.clientY);
-      showToast("感谢点赞！❤️","heart");
-    }
-    /* 日后接后端：在此处 fetch('/api/like',{method:'POST'}) 即可，UI 逻辑无需改动 */
+    btn.classList.remove("pop");void btn.offsetWidth;btn.classList.add("pop");
+    confettiBurst(e.clientX,e.clientY);
+    showToast("感谢点赞！❤️","heart");
+
+    // 后端写入：成功则以服务端返回的全局计数为准；失败保留乐观值
+    const server=await pushLike();
+    if(server!=null){ count=server; localStorage.setItem(KEY_LOCAL,String(count)); render(); }
+    else { fetchGlobal(); } // 无写入代理/失败：再拉一次全局值，尽量贴近真实总数
+
+    busy=false; btn.classList.remove("is-busy");
   });
 })();
 
@@ -1662,7 +1832,7 @@ addEventListener("keydown",e=>{if(e.key==="Escape")lightbox.classList.remove("op
 $("#printBtn")?.addEventListener("click",()=>window.print());
 
 // 收集所有可作为“下一节”的锚点区块，按文档位置排序
-const sectionIds = ["education","services","skills","experience","projects","highlights","gallery"];
+const sectionIds = ["education","services","skills","experience","projects","highlights"];
 function sectionTops(){
   return sectionIds.map(id=>document.getElementById(id)).filter(Boolean)
     .map(elm=>elm.getBoundingClientRect().top + scrollY - 80)
@@ -1878,13 +2048,15 @@ async function fetchFromManifest(){
   // 展开/收起整个播放面板（FAB ↔ 面板）
   function expand(){ player.classList.add("expanded"); fab.setAttribute("aria-expanded","true"); }
   function collapse(){ player.classList.remove("expanded","open"); fab.setAttribute("aria-expanded","false"); head.setAttribute("aria-expanded","false"); fab.focus(); }
-  // 点击右下角悬浮按钮：直接展开面板并开始播放（用户手势内触发，绕过自动播放限制）
-  fab.addEventListener("click",()=>{
-    expand();
-    if(!playlist.length){ showToast("音乐库为空，上传作品后即可播放","music"); return; }
-    if(!audio.getAttribute("src")) load(idx,true);      // 尚未载入源：载入当前曲并播放
-    else if(audio.paused) audio.play().catch(()=>showToast("点击面板里的 ▶ 开始播放","music"));
-  });
+  // 点击左下角圆形音乐图标：直接切歌 / 播放（音乐来自 music 文件夹）——
+  // 空库→提示；未在播放→播放当前曲；正在播放→切下一首。（完整面板可从「音乐作品展示」卡片展开）
+  function fabCue(){
+    if(!playlist.length){ showToast("音乐库为空，上传作品到 music 文件夹后自动上架","music"); return; }
+    if(!audio.getAttribute("src")){ load(idx,true); return; }   // 还没载入：播当前曲
+    if(audio.paused && !audio.currentTime){ load(idx,true); return; } // 停在起点：开始播放
+    load(idx+1,true);                                            // 正在播放/已播过：切下一首
+  }
+  fab.addEventListener("click",fabCue);
   collapseBtn.addEventListener("click",collapse);
   // 点击播放器外部：先收起列表，若列表已收则收起整个面板
   document.addEventListener("click",e=>{
@@ -2086,6 +2258,7 @@ const _reduceMotion = matchMedia("(prefers-reduced-motion:reduce)").matches;
   function bind(node){
     node.style.transition = node.style.transition || "transform .25s cubic-bezier(.2,.8,.2,1)";
     node.addEventListener("mousemove",e=>{
+      if(node.classList.contains("liked")) return;         // 点赞后锁定：不再磁性吸附
       const r=node.getBoundingClientRect();
       const dx=e.clientX-(r.left+r.width/2), dy=e.clientY-(r.top+r.height/2);
       node.style.transform=`translate(${dx*STRENGTH}px,${dy*STRENGTH}px)`;
